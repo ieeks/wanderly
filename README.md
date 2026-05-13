@@ -2,7 +2,7 @@
 
 > Familien-Reise-Dashboard — Buchungen, Dokumente, Kosten & Teilen auf einen Blick.
 
-**Status:** v1.4.0 · live · Mai 2026 · [ieeks.github.io/wanderly](https://ieeks.github.io/wanderly)
+**Status:** v1.4.2 · live · Mai 2026 · [ieeks.github.io/wanderly](https://ieeks.github.io/wanderly)
 
 ---
 
@@ -83,7 +83,9 @@ wanderly/
 │   ├── firebase.js
 │   └── App.jsx                     ← State-Router + Transitions
 ├── scripts/
-│   └── seed.js                     ← Firestore einmalig befüllen (npm run seed)
+│   ├── seed.js                     ← Firestore einmalig befüllen (npm run seed)
+│   ├── generate-airports.js        ← AIRPORTS Array generieren (npm run airports)
+│   └── wikidata-cities.json        ← Wikidata Cache (deutsche Gemeindenamen, nach --refresh-wikidata)
 ├── .github/workflows/
 │   └── deploy.yml                  ← GitHub Actions → gh-pages
 ├── firestore.rules

@@ -17,6 +17,35 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ---
 
+## [1.4.2] — 2026-05-13
+
+### Fixed
+- **Firestore Write Silent Fail** — neue Trips landeten nicht in Firestore; drei Ursachen:
+  1. `handleSave` in `AddTripSheet` war nicht `async` → `onAdd(newTrip)` Promise wurde nie awaited, Firestore-Fehler still geschluckt, `onClose()` lief sofort durch
+  2. `extras.insurance` / `extras.rental` wurden auf `undefined` gesetzt wenn nicht aktiviert — Firestore lehnt Dokumente mit `undefined`-Werten ab und wirft `FirebaseError`
+  3. Beide Bugs zusammen: Schreibfehler unsichtbar, UI verhielt sich als ob gespeichert
+
+### Added
+- **Kostenfelder im Trip-Dokument** — `costFlight`, `costHotel`, `costRental`, `costOther` werden jetzt beim Speichern in Firestore abgelegt (bisher nur für `total` verwendet, aber nicht einzeln persistiert) → Kostenaufschlüsselung in TripDetail funktioniert ab sofort für alle neuen Trips
+
+---
+
+## [1.4.1] — 2026-05-13
+
+### Added
+- **AIRPORTS erweitert** — 80 → 1178 Flughäfen (`large_airport` aus airport-codes Datensatz)
+  - 240 hand-kuratierte deutsche Namen (DACH + Top-Destinationen: Griechenland, Spanien, Kanaren, Italien, Kroatien, Türkei, Asien, Amerika, Afrika, Australien, Ozeanien, Osteuropa)
+  - 938 englische Fallback-Namen aus CSV-Datensatz (später via Wikidata übersetzbar)
+- **Airport Generator Script** — `scripts/generate-airports.js` mit dreistufiger Priorität:
+  1. `DE_OVERRIDES` — hand-kuratierte DACH + Top-Destinationen
+  2. Wikidata SPARQL — deutsche Gemeindenamen via `wdt:P131` + `rdfs:label @de`, gecacht in `scripts/wikidata-cities.json`
+  3. CSV Fallback — englische Municipalitätsnamen aus airport-codes Dataset
+- **`--update` Flag** — patcht `mockData.js` direkt, kein manuelles Pipen nötig
+- **`--refresh-wikidata` Flag** — holt neuen SPARQL-Stand von Wikidata
+- **npm Scripts** — `npm run airports` (mit Cache) · `npm run airports:refresh` (Wikidata neu laden + update)
+
+---
+
 ## [1.4.0] — 2026-05-13
 
 ### Changed
@@ -281,7 +310,9 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ---
 
-[Unreleased]: https://github.com/ieeks/wanderly/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/ieeks/wanderly/compare/v1.4.2...HEAD
+[1.4.2]: https://github.com/ieeks/wanderly/compare/v1.4.1...v1.4.2
+[1.4.1]: https://github.com/ieeks/wanderly/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/ieeks/wanderly/compare/v1.3.1...v1.4.0
 [1.3.1]: https://github.com/ieeks/wanderly/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/ieeks/wanderly/compare/v1.2.0...v1.3.0
