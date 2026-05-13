@@ -9,8 +9,21 @@ function SunGlow({ right, top }) {
   return <div style={{ position:"absolute", pointerEvents:"none", width:200, height:200, borderRadius:"50%", background:"radial-gradient(circle,rgba(230,181,69,0.5) 0%,rgba(240,181,138,0.3) 40%,transparent 70%)", filter:"blur(2px)", right, top }} />;
 }
 
+const CHIPS = [
+  { id: 'all',    label: 'Alle'       },
+  { id: 'due',    label: 'Ausstehend' },
+  { id: 'paid',   label: 'Bezahlt'    },
+  { id: 'flight', label: '✈ Flug'     },
+  { id: 'train',  label: '🚂 Zug'     },
+  { id: 'drive',  label: '🚗 Auto'    },
+];
+
 export default function HomeScreen({ trips, onOpenTrip, onTab, onAddTrip, inboxBadge = 0 }) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded,     setExpanded]     = useState(false);
+  const [searchOpen,   setSearchOpen]   = useState(false);
+  const [query,        setQuery]        = useState('');
+  const [activeFilter, setActiveFilter] = useState('all');
+
   const totalBudget = trips.reduce((a,t) => a+t.total, 0);
   const totalPaid   = trips.reduce((a,t) => a+t.paid, 0);
   const totalDue    = trips.reduce((a,t) => a+t.due, 0);
@@ -37,6 +50,29 @@ export default function HomeScreen({ trips, onOpenTrip, onTab, onAddTrip, inboxB
     return new Date(2026, months[m[2]]||0, parseInt(m[1])) >= TODAY_PROTO;
   });
   const past = sorted.filter(t => !upcoming.includes(t));
+
+  const filteredTrips = sorted.filter(t => {
+    const q = query.toLowerCase();
+    const matchText = !q ||
+      t.name?.toLowerCase().includes(q) ||
+      t.route?.toLowerCase().includes(q) ||
+      t.short?.toLowerCase().includes(q);
+    const matchFilter =
+      activeFilter === 'all'    ? true :
+      activeFilter === 'due'    ? t.due > 0 :
+      activeFilter === 'paid'   ? t.due === 0 :
+      activeFilter === 'flight' ? !!t.flight :
+      activeFilter === 'train'  ? !!t.train :
+      activeFilter === 'drive'  ? !!t.drive :
+      true;
+    return matchText && matchFilter;
+  });
+
+  function closeSearch() {
+    setSearchOpen(false);
+    setQuery('');
+    setActiveFilter('all');
+  }
 
   if (trips.length === 0) {
     return (
@@ -91,6 +127,12 @@ export default function HomeScreen({ trips, onOpenTrip, onTab, onAddTrip, inboxB
 
   return (
     <div style={S.screen}>
+      <style>{`
+        @keyframes slideInDown {
+          from { opacity: 0; transform: translateY(-8px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
       <SunGlow right={-80} top={-50} />
       <div style={{ ...S.scroll, paddingTop:56, paddingBottom:120 }}>
         <div style={{ ...S.px, marginBottom:16 }}>
@@ -121,15 +163,87 @@ export default function HomeScreen({ trips, onOpenTrip, onTab, onAddTrip, inboxB
           </div>
         </div>
 
+        {/* Header row: Deine Reisen + Suche + Toggle */}
         <div style={{ ...S.px, display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
           <span style={{ fontFamily:"Georgia,serif", fontWeight:600, fontSize:20, letterSpacing:"-0.02em" }}>Deine Reisen</span>
-          <div style={{ display:"flex", alignItems:"center", gap:5, cursor:"pointer" }} onClick={() => setExpanded(e => !e)}>
-            <span style={{ fontFamily:"monospace", fontSize:10, color:"#C96F4A", fontWeight:600 }}>{expanded?"stapeln":"liste"}</span>
-            <Ic name={expanded?"Layers":"LayoutList"} size={14} color="#C96F4A" />
+          <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+            <div onClick={() => searchOpen ? closeSearch() : setSearchOpen(true)} style={{ cursor:"pointer", display:"flex", alignItems:"center" }}>
+              <Ic name={searchOpen ? "X" : "Search"} size={18} color="#C96F4A" />
+            </div>
+            {!searchOpen && (
+              <div style={{ display:"flex", alignItems:"center", gap:5, cursor:"pointer" }} onClick={() => setExpanded(e => !e)}>
+                <span style={{ fontFamily:"monospace", fontSize:10, color:"#C96F4A", fontWeight:600 }}>{expanded?"stapeln":"liste"}</span>
+                <Ic name={expanded?"Layers":"LayoutList"} size={14} color="#C96F4A" />
+              </div>
+            )}
           </div>
         </div>
 
-        {!expanded && (
+        {/* Search panel */}
+        {searchOpen && (
+          <div style={{ padding:"0 18px 12px", animation:"slideInDown 240ms ease" }}>
+            <div style={{ position:"relative", marginBottom:10 }}>
+              <div style={{ position:"absolute", left:12, top:"50%", transform:"translateY(-50%)", pointerEvents:"none" }}>
+                <Ic name="Search" size={15} color="#9F8A6F" />
+              </div>
+              <input
+                autoFocus
+                placeholder="Reiseziel suchen…"
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                style={{ width:"100%", boxSizing:"border-box", padding:"10px 14px 10px 38px", borderRadius:14, border:"none", background:"rgba(45,31,21,0.07)", fontFamily:"Manrope, system-ui, sans-serif", fontSize:14, color:"#2D1F15", outline:"none" }}
+              />
+            </div>
+            <div style={{ display:"flex", gap:8, overflowX:"auto", paddingBottom:4, scrollbarWidth:"none" }}>
+              {CHIPS.map(chip => (
+                <button key={chip.id} onClick={() => setActiveFilter(chip.id)}
+                  style={{ padding:"5px 12px", borderRadius:999, fontSize:12, fontWeight:600, whiteSpace:"nowrap", cursor:"pointer", border:"none", transition:"all 150ms", background: activeFilter===chip.id ? "#C96F4A" : "rgba(45,31,21,0.07)", color: activeFilter===chip.id ? "#FBF4E6" : "#2D1F15", flexShrink:0 }}>
+                  {chip.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Search results — always list mode, all trips */}
+        {searchOpen && filteredTrips.length === 0 && (
+          <div style={{ textAlign:"center", padding:"40px 18px", color:"#9F8A6F" }}>
+            <div style={{ fontSize:32, marginBottom:12 }}>🔍</div>
+            <div style={{ fontFamily:"Georgia,serif", fontSize:18, fontWeight:600, color:"#2D1F15" }}>Keine Reisen gefunden</div>
+            {query && <div style={{ fontFamily:"monospace", fontSize:11, marginTop:6 }}>für „{query}"</div>}
+          </div>
+        )}
+
+        {searchOpen && filteredTrips.length > 0 && (
+          <div style={{ padding:"0 18px", display:"flex", flexDirection:"column", gap:14 }}>
+            {filteredTrips.map(t => (
+              <div key={t.id} onClick={() => onOpenTrip(t.id)}
+                style={{ background:t.bg, borderRadius:24, padding:"16px 16px 18px", boxShadow:"0 6px 20px rgba(45,31,21,0.09)", cursor:"pointer", opacity: past.includes(t) ? 0.6 : 1 }}>
+                <div style={{ display:"flex", justifyContent:"space-between" }}>
+                  <div>
+                    <div style={{ fontFamily:"monospace", fontSize:9, letterSpacing:"0.14em", textTransform:"uppercase", color:"rgba(45,31,21,0.55)" }}>{t.dates}</div>
+                    <div style={{ fontFamily:"Georgia,serif", fontWeight:600, fontSize:26, lineHeight:1, marginTop:4, letterSpacing:"-0.02em" }}>{t.name} <span style={{ fontSize:20 }}>{t.emoji}</span></div>
+                    <div style={{ fontSize:11, color:"rgba(45,31,21,0.6)", marginTop:3 }}>{t.route} · {t.short}</div>
+                  </div>
+                  <div style={{ display:"flex", gap:4 }}>
+                    {t.flight && <Ic name="Plane" size={15} color="rgba(45,31,21,0.4)" />}
+                    {t.train  && <Ic name="Train" size={15} color="rgba(45,31,21,0.4)" />}
+                    {t.drive  && <Ic name="Car"   size={15} color="rgba(45,31,21,0.4)" />}
+                  </div>
+                </div>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:12 }}>
+                  <span style={{ fontFamily:"Georgia,serif", fontSize:20, fontWeight:600 }}>€ {t.total.toLocaleString("de-AT")}</span>
+                  {t.due > 0
+                    ? <span style={{ ...S.chip, color:"#9C4A28", background:"rgba(196,122,44,0.14)", border:"1px solid rgba(196,122,44,0.25)" }}><Ic name="Clock" size={10} color="#9C4A28" />{t.dueDate} · € {t.due.toLocaleString("de-AT")}</span>
+                    : <span style={{ ...S.chip, color:"#5B7148", background:"rgba(107,142,78,0.14)", border:"1px solid rgba(107,142,78,0.25)" }}><Ic name="Check" size={10} color="#5B7148" />bezahlt</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Normal stack / list view */}
+        {!searchOpen && !expanded && (
           <div style={{ position:"relative", height:400, overflow:"hidden", padding:"0 18px", flexShrink:0 }}>
             {sorted.map((t, i) => {
               const top = i*74;
@@ -172,7 +286,7 @@ export default function HomeScreen({ trips, onOpenTrip, onTab, onAddTrip, inboxB
           </div>
         )}
 
-        {expanded && (
+        {!searchOpen && expanded && (
           <div style={{ padding:"0 18px", display:"flex", flexDirection:"column", gap:14 }}>
             {past.length > 0 && upcoming.length > 0 && (
               <div style={{ fontFamily:"monospace", fontSize:9, letterSpacing:"0.14em", textTransform:"uppercase", color:"#9F8A6F", paddingLeft:2 }}>Bevorstehend</div>
@@ -204,6 +318,7 @@ export default function HomeScreen({ trips, onOpenTrip, onTab, onAddTrip, inboxB
             ))}
           </div>
         )}
+
         <div style={{ textAlign:"center", marginTop:16, fontFamily:"monospace", fontSize:10, letterSpacing:"0.12em", textTransform:"uppercase", color:"rgba(45,31,21,0.45)" }}>tippe auf eine Reise</div>
       </div>
       <div onClick={onAddTrip} style={{ position:'absolute', right:20, bottom:80, width:52, height:52, borderRadius:'50%', background:'#C96F4A', boxShadow:'0 6px 20px rgba(201,111,74,0.45)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', zIndex:25 }}>
