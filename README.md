@@ -1,2 +1,0 @@
-# wanderly
-Family travel dashboard
