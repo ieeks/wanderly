@@ -9,12 +9,24 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 ## [Unreleased]
 
 ### Planned · v1 App · nächste Schritte
-- Search / Filter — Trips nach Jahr, Status, Destination
 - PDF Viewer — in-app PDF öffnen
 - WhatsApp Deep Link (echte wa.me URL)
 - Boarding Pass Fullscreen — Vollbild für Gate · QR · screen.wakeLock
 - Gmail Sync: Label `Reisen` → IMAP → GPT-4o-mini → Firestore
 - Desktop Version
+
+---
+
+## [1.3.0] — 2026-05-13
+
+### Added
+- **Search & Filter** — Lupe-Icon im HomeScreen Header öffnet Suchfeld + Filter-Chips
+  - Freitext-Suche in `trip.name`, `trip.route`, `trip.short` (case-insensitive)
+  - Filter-Chips: Alle · Ausstehend · Bezahlt · ✈ Flug · 🚂 Zug · 🚗 Auto
+  - Slide-Down Animation beim Öffnen (240ms)
+  - Bei aktiver Suche: immer Listen-Modus, vergangene Trips sichtbar
+  - Empty State "Keine Reisen gefunden" mit Query-Anzeige
+  - X-Icon schließt Suche und setzt Query + Filter zurück
 
 ---
 
@@ -253,7 +265,8 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ---
 
-[Unreleased]: https://github.com/ieeks/wanderly/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/ieeks/wanderly/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/ieeks/wanderly/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/ieeks/wanderly/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/ieeks/wanderly/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/ieeks/wanderly/compare/v0.9.0...v1.0.0

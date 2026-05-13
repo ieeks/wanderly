@@ -110,7 +110,7 @@ family/{familyId}/members/{memberId}
 - [x] ~~Vite + React Setup · GitHub Pages Deploy~~ ✅ v1.1.0
 - [x] ~~Firestore Persistenz — Trips, Family, Inbox · Realtime via onSnapshot~~ ✅ v1.2.0
 - [x] ~~Add/Edit/Delete Trip → schreibt nach Firestore~~ ✅ v1.2.0
-- [ ] Search / Filter — Trips nach Jahr, Status, Destination
+- [x] ~~Search / Filter — Trips nach Jahr, Status, Destination~~ ✅ v1.3.0
 - [ ] Boarding Pass Fullscreen — Vollbild für Gate-Vorzeigen, QR-Code, screen.wakeLock (PWA)
 
 ### Dokumente
