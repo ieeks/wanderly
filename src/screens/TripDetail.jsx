@@ -101,6 +101,23 @@ export default function TripDetail({ tripId, trips, family, onBack, onShare, onI
           <div style={{ ...S.card, background:"#2D1F15", color:"#FBF4E6" }}>
             <div style={{ fontFamily:"monospace", fontSize:9, textTransform:"uppercase", letterSpacing:"0.08em", color:"rgba(251,244,230,0.5)" }}>Gesamt</div>
             <div style={{ fontFamily:"Georgia,serif", fontSize:28, fontWeight:600, marginTop:4 }}>€ {trip.total.toLocaleString("de-AT")}</div>
+            {(trip.costFlight || trip.costHotel || trip.costRental || trip.costOther) && (
+              <div style={{ display:"flex", flexWrap:"wrap", gap:"4px 16px", marginTop:10, paddingTop:10, borderTop:"1px solid rgba(251,244,230,0.1)" }}>
+                {[
+                  { key:"costFlight", icon:"Plane",      label:"Flüge"      },
+                  { key:"costHotel",  icon:"Building2",  label:"Unterkunft" },
+                  { key:"costRental", icon:"Car",         label:"Mietwagen"  },
+                  { key:"costOther",  icon:"DollarSign",  label:"Sonstiges"  },
+                ].filter(cat => trip[cat.key] && parseInt(trip[cat.key]) > 0).map(cat => (
+                  <div key={cat.key} style={{ display:"flex", alignItems:"center", gap:5 }}>
+                    <Ic name={cat.icon} size={11} color="rgba(251,244,230,0.5)" />
+                    <span style={{ fontFamily:"monospace", fontSize:10, color:"rgba(251,244,230,0.6)" }}>
+                      {cat.label} € {parseInt(trip[cat.key]).toLocaleString("de-AT")}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
             <div style={{ display:"flex", justifyContent:"space-between", marginTop:10 }}>
               <span style={{ fontFamily:"monospace", fontSize:10, color:"rgba(251,244,230,0.65)" }}>€ {trip.paid.toLocaleString("de-AT")} paid</span>
               {trip.due > 0 && <span style={{ fontFamily:"monospace", fontSize:10, color:"#E6B545", fontWeight:600 }}>⏰ € {trip.due.toLocaleString("de-AT")} · {trip.dueDate}</span>}
