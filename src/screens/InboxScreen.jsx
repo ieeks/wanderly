@@ -3,7 +3,7 @@ import TabBar from '../components/TabBar.jsx';
 import { S } from '../styles/shared.js';
 import { TAG_COLOR, TAG_NAME } from '../data/mockData.js';
 
-export default function InboxScreen({ items, setItems, onTab, onOpenTrip }) {
+export default function InboxScreen({ items, onMarkRead, onTab, onOpenTrip }) {
   const unread = items.filter(i => !i.read).length;
   return (
     <div style={S.screen}>
@@ -17,7 +17,7 @@ export default function InboxScreen({ items, setItems, onTab, onOpenTrip }) {
         </div>
         <div style={{ background:"#FFFAF1", borderRadius:20, margin:"0 18px", overflow:"hidden", boxShadow:"0 3px 12px rgba(45,31,21,0.06)" }}>
           {items.map((item, i) => (
-            <div key={item.id} onClick={() => { setItems(p=>p.map(x=>x.id===item.id?{...x,read:true}:x)); item.tag&&onOpenTrip(item.tag); }}
+            <div key={item.id} onClick={() => { onMarkRead(item.id); item.tag&&onOpenTrip(item.tag); }}
               style={{ display:"flex", alignItems:"flex-start", gap:10, padding:"12px 14px", borderBottom: i<items.length-1?"1px solid rgba(45,31,21,0.06)":"none", cursor:"pointer" }}>
               <div style={{ width:7, height:7, borderRadius:"50%", background:item.read?"transparent":"#C96F4A", marginTop:7, flexShrink:0 }} />
               <div style={{ width:38, height:38, borderRadius:12, background:item.bg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
