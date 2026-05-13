@@ -127,10 +127,15 @@ export default function AddTripSheet({ onClose, onAdd, onSave, initialTrip }) {
   const canNext1 = form.name.trim().length > 0 && form.dateFrom && form.dateTo;
   const canSave  = canNext1 && (form.costFlight || form.costHotel || form.costOther);
 
-  function handleSave() {
+  async function handleSave() {
     const nights = nightsBetween(form.dateFrom, form.dateTo);
     const ciDate = fmtDate(form.dateFrom);
     const coDate = fmtDate(form.dateTo);
+    const costFlight = parseInt(form.costFlight) || 0;
+    const costHotel  = parseInt(form.costHotel)  || 0;
+    const costRental = parseInt(form.costRental) || 0;
+    const costOther  = parseInt(form.costOther)  || 0;
+    const total = costFlight + costHotel + costRental + costOther;
     const newTrip = {
       id: 'trip_' + Date.now(),
       name: form.name,
@@ -138,12 +143,16 @@ export default function AddTripSheet({ onClose, onAdd, onSave, initialTrip }) {
       dates: fmtDate(form.dateFrom) + ' – ' + fmtDate(form.dateTo),
       short: nights + ' Nächte',
       route: 'Wien → ' + form.name,
-      total: (parseInt(form.costFlight)||0) + (parseInt(form.costHotel)||0) + (parseInt(form.costRental)||0) + (parseInt(form.costOther)||0),
-      paid:  parseInt(form.paid)  || 0,
-      due:   ((parseInt(form.costFlight)||0) + (parseInt(form.costHotel)||0) + (parseInt(form.costRental)||0) + (parseInt(form.costOther)||0)) - (parseInt(form.paid)||0),
+      total,
+      paid:  parseInt(form.paid) || 0,
+      due:   total - (parseInt(form.paid) || 0),
       dueDate: null,
       bg: TRIP_COLORS[form.color].bg,
       accent: TRIP_COLORS[form.color].accent,
+      costFlight: costFlight || null,
+      costHotel:  costHotel  || null,
+      costRental: costRental || null,
+      costOther:  costOther  || null,
       flight: form.type === 'flight' ? { from: 'VIE', fromCity:'Wien', to: form.flightTo||'???', toCity: form.flightToCity||form.name, no: form.flightNo, date: ciDate, depart: form.flightDepart, arrive: form.flightArrive } : null,
       train:  form.type === 'train'  ? { from:'Wien Hbf', to: form.name, no: form.trainNo, date: ciDate, depart: form.trainDepart, arrive: form.trainArrive, wagon: form.trainWagon, seats: form.trainSeats } : null,
       drive:  form.type === 'drive'  ? { from:'Wien', to: form.name, km: parseInt(form.driveKm)||0, time: form.driveTime, date: ciDate } : null,
@@ -154,15 +163,15 @@ export default function AddTripSheet({ onClose, onAdd, onSave, initialTrip }) {
         co:   coDate + (form.hotelCo ? ', ' + form.hotelCo : ', 11:00'),
       } : { name:'', loc:'', ci:'', co:'' },
       extras: {
-        insurance: form.insurance || undefined,
-        rental: form.rental ? 'pending' : undefined,
+        insurance: form.insurance ? true : null,
+        rental: form.rental ? 'pending' : null,
       },
       itinerary: [],
     };
     if (isEdit) {
-      onSave({ ...newTrip, id: initialTrip.id, itinerary: initialTrip.itinerary || [] });
+      await onSave({ ...newTrip, id: initialTrip.id, itinerary: initialTrip.itinerary || [] });
     } else {
-      onAdd(newTrip);
+      await onAdd(newTrip);
     }
     onClose();
   }
