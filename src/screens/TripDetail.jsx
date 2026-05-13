@@ -14,7 +14,7 @@ export default function TripDetail({ tripId, trips, family, onBack, onShare, onI
   return (
     <div style={S.screen}>
       <SunGlow right={-70} top={30} />
-      <div style={{ ...S.scroll, paddingTop:50, paddingBottom:90 }}>
+      <div style={{ ...S.scroll, paddingTop:50, paddingBottom:100 }}>
         <div style={{ ...S.px, display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
           <div style={S.pill} onClick={onBack}><Ic name="ChevronLeft" size={18} color="#2D1F15" /></div>
           <div style={{ display:"flex", gap:8, position:"relative" }}>

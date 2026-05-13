@@ -78,7 +78,7 @@ export default function HomeScreen({ trips, onOpenTrip, onTab, onAddTrip, inboxB
     return (
       <div style={S.screen}>
         <SunGlow right={-60} top={-40} />
-        <div style={{ ...S.scroll, paddingTop:56, paddingBottom:100, display:"flex", flexDirection:"column" }}>
+        <div style={{ ...S.scroll, paddingTop:56, paddingBottom:110, display:"flex", flexDirection:"column" }}>
           <div style={{ ...S.px, marginBottom:0 }}>
             <WanderlyLogo size={38} showWordmark={true} />
           </div>
@@ -134,7 +134,7 @@ export default function HomeScreen({ trips, onOpenTrip, onTab, onAddTrip, inboxB
         }
       `}</style>
       <SunGlow right={-80} top={-50} />
-      <div style={{ ...S.scroll, paddingTop:56, paddingBottom:120 }}>
+      <div style={{ ...S.scroll, paddingTop:56, paddingBottom:130 }}>
         <div style={{ ...S.px, marginBottom:16 }}>
           <WanderlyLogo size={38} showWordmark={true} />
           <div style={{ marginTop:10 }}>

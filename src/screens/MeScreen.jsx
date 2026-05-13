@@ -25,7 +25,7 @@ export default function MeScreen({ onTab, inboxBadge = 0, family, onEditPerson }
   ];
   return (
     <div style={S.screen}>
-      <div style={{ ...S.scroll, paddingTop:56, paddingBottom:100 }}>
+      <div style={{ ...S.scroll, paddingTop:56, paddingBottom:110 }}>
         <div style={{ ...S.px, marginBottom:4, marginTop:4 }}>
           <WanderlyLogo size={28} showWordmark={true} />
         </div>
