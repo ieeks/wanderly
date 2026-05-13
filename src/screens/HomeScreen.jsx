@@ -159,13 +159,13 @@ export default function HomeScreen({ trips, onOpenTrip, onTab, onAddTrip, inboxB
                 </div>
               );
             })}
-            {upcoming.length > STACK_VISIBLE && (
+            {sorted.length > STACK_VISIBLE && (
               <div
                 onClick={e => { e.stopPropagation(); setExpanded(true); }}
                 style={{ position:"absolute", bottom:12, left:0, right:0, display:"flex", justifyContent:"center", zIndex:50, cursor:"pointer" }}>
                 <div style={{ display:"flex", alignItems:"center", gap:6, background:"#2D1F15", color:"#FBF4E6", padding:"6px 14px", borderRadius:999, boxShadow:"0 3px 10px rgba(45,31,21,0.25)" }}>
                   <Ic name="LayoutList" size={12} color="#FBF4E6" />
-                  <span style={{ fontFamily:"monospace", fontSize:9, letterSpacing:"0.12em", textTransform:"uppercase", fontWeight:600 }}>+{upcoming.length - STACK_VISIBLE} weitere · alle zeigen</span>
+                  <span style={{ fontFamily:"monospace", fontSize:9, letterSpacing:"0.12em", textTransform:"uppercase", fontWeight:600 }}>+{sorted.length - STACK_VISIBLE} weitere · alle zeigen</span>
                 </div>
               </div>
             )}
