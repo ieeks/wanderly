@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { db } from './firebase.js';
+import { useCollection } from './hooks/useFirestore.js';
 import { TRIPS, FAMILY, INBOX } from './data/mockData.js';
 
 import HomeScreen from './screens/HomeScreen.jsx';
@@ -12,6 +15,7 @@ import ShareSheet from './components/ShareSheet.jsx';
 import DocsSheet from './components/DocsSheet.jsx';
 import AddTripSheet from './components/AddTripSheet.jsx';
 import DeleteConfirmSheet from './components/DeleteConfirmSheet.jsx';
+import WanderlyLogo from './components/WanderlyLogo.jsx';
 import Toast from './components/Toast.jsx';
 
 import './index.css';
@@ -50,14 +54,17 @@ export default function App() {
   const [addTrip, setAddTrip]         = useState(false);
   const [editTrip, setEditTrip]       = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
-  const [trips, setTrips]             = useState(TRIPS);
   const [toast, setToast]             = useState(null);
-  const [inboxItems, setInboxItems]   = useState(INBOX);
-  const [family, setFamily]           = useState(FAMILY);
+
+  const { data: trips,      loading: tripsLoading  } = useCollection('trips',  TRIPS);
+  const { data: family,     loading: familyLoading } = useCollection('family', FAMILY);
+  const { data: inboxItems, loading: inboxLoading  } = useCollection('inbox',  INBOX);
+
+  const loading = tripsLoading || familyLoading || inboxLoading;
+  const unreadCount = inboxItems.filter(i => !i.read).length;
 
   const ROUTE_DEPTH = { home:0, inbox:0, split:0, me:0, detail:1, itinerary:2 };
   const TAB_ORDER   = { home:0, inbox:1, split:2, me:3 };
-  const unreadCount = inboxItems.filter(i => !i.read).length;
 
   function go(r, id = null) {
     setPrevRoute(route);
@@ -80,31 +87,36 @@ export default function App() {
     return 'fade';
   }
 
-  function deleteTrip(id) {
-    setTrips(p => p.filter(t => t.id !== id));
+  async function handleAddTrip(newTrip) {
+    await setDoc(doc(db, 'trips', newTrip.id), newTrip);
+  }
+
+  async function handleSaveTrip(updated) {
+    await setDoc(doc(db, 'trips', updated.id), updated);
+    setEditTrip(null);
+  }
+
+  async function deleteTrip(id) {
+    await deleteDoc(doc(db, 'trips', id));
     setDeleteConfirm(null);
     setPrevRoute(route);
     setRoute('home');
   }
 
-  function handleEditPerson(person, deleteId) {
+  async function updateTripItinerary(updated) {
+    await setDoc(doc(db, 'trips', updated.id), updated);
+  }
+
+  async function handleEditPerson(person, deleteId) {
     if (deleteId) {
-      setFamily(f => f.filter(p => p.id !== deleteId));
+      await deleteDoc(doc(db, 'family', deleteId));
     } else {
-      setFamily(f => f.some(p => p.id === person.id)
-        ? f.map(p => p.id === person.id ? person : p)
-        : [...f, person]
-      );
+      await setDoc(doc(db, 'family', person.id), person);
     }
   }
 
-  function saveEditedTrip(updated) {
-    setTrips(p => p.map(t => t.id === updated.id ? updated : t));
-    setEditTrip(null);
-  }
-
-  function updateTripItinerary(updated) {
-    setTrips(p => p.map(t => t.id === updated.id ? updated : t));
+  async function handleMarkRead(id) {
+    await setDoc(doc(db, 'inbox', String(id)), { read: true }, { merge: true });
   }
 
   function sent(who) {
@@ -114,6 +126,12 @@ export default function App() {
   }
 
   const shareTrip = share && trips.find(t => t.id === share);
+
+  if (loading) return (
+    <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100dvh', background:'#FBF4E6' }}>
+      <WanderlyLogo size={60} />
+    </div>
+  );
 
   return (
     <div style={{
@@ -131,13 +149,13 @@ export default function App() {
       {route === 'home'      && <AnimatedScreen key="home"      direction={getDir('home')}>      <HomeScreen      trips={trips} onOpenTrip={id => go('detail', id)} onTab={tab} onAddTrip={() => setAddTrip(true)} inboxBadge={unreadCount} /></AnimatedScreen>}
       {route === 'detail'    && <AnimatedScreen key="detail"    direction={getDir('detail')}>    <TripDetail      tripId={tripId} trips={trips} family={family} onBack={() => go('home')} onShare={() => setShare(tripId)} onItinerary={id => go('itinerary', id)} onDocs={() => setDocs(true)} onDelete={t => setDeleteConfirm(t)} onEdit={t => { setEditTrip(t); setAddTrip(true); }} /></AnimatedScreen>}
       {route === 'itinerary' && <AnimatedScreen key="itinerary" direction={getDir('itinerary')}><ItineraryScreen tripId={tripId} trips={trips} onBack={() => go('detail')} onUpdateTrip={updateTripItinerary} /></AnimatedScreen>}
-      {route === 'inbox'     && <AnimatedScreen key="inbox"     direction={getDir('inbox')}>     <InboxScreen     items={inboxItems} setItems={setInboxItems} onTab={tab} onOpenTrip={id => go('detail', id)} /></AnimatedScreen>}
+      {route === 'inbox'     && <AnimatedScreen key="inbox"     direction={getDir('inbox')}>     <InboxScreen     items={inboxItems} onMarkRead={handleMarkRead} onTab={tab} onOpenTrip={id => go('detail', id)} /></AnimatedScreen>}
       {route === 'split'     && <AnimatedScreen key="split"     direction={getDir('split')}>     <SplitScreen     onTab={tab} inboxBadge={unreadCount} family={family} /></AnimatedScreen>}
       {route === 'me'        && <AnimatedScreen key="me"        direction={getDir('me')}>        <MeScreen        onTab={tab} inboxBadge={unreadCount} family={family} onEditPerson={handleEditPerson} /></AnimatedScreen>}
 
       {share && shareTrip && <ShareSheet trip={shareTrip} onClose={() => setShare(null)} onSent={sent} />}
       {docs && route === 'detail' && <DocsSheet trip={trips.find(t => t.id === tripId) || trips[0]} onClose={() => setDocs(false)} />}
-      {addTrip && <AddTripSheet onClose={() => { setAddTrip(false); setEditTrip(null); }} onAdd={t => setTrips(p => [...p, t])} onSave={saveEditedTrip} initialTrip={editTrip} />}
+      {addTrip && <AddTripSheet onClose={() => { setAddTrip(false); setEditTrip(null); }} onAdd={handleAddTrip} onSave={handleSaveTrip} initialTrip={editTrip} />}
       {deleteConfirm && <DeleteConfirmSheet trip={deleteConfirm} onCancel={() => setDeleteConfirm(null)} onConfirm={deleteTrip} />}
       {toast && <Toast msg={toast} />}
     </div>
