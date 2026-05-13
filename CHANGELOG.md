@@ -8,16 +8,35 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ## [Unreleased]
 
-### Planned · Prototype
-- ✅ Alle Features umgesetzt — Prototype bereit für Claude Code Handoff
-
-### Planned · v1 App (Claude Code)
-- Add Trip → Firestore persistieren
-- Gmail Sync: Label `Reisen` → IMAP → GPT-4o-mini → Firestore
+### Planned · v1 App · nächste Schritte
+- Add / Edit Trip → Firestore persistieren (statt Mock-Daten)
 - Search / Filter — Trips nach Jahr, Status, Destination
 - PDF Viewer — in-app PDF öffnen
-- WhatsApp Deep Link
+- WhatsApp Deep Link (echte wa.me URL)
+- Boarding Pass Fullscreen — Vollbild für Gate · QR · screen.wakeLock
+- Gmail Sync: Label `Reisen` → IMAP → GPT-4o-mini → Firestore
 - Desktop Version
+
+---
+
+## [1.1.0] — 2026-05-13
+
+### Added
+- **Vite + React App** — Prototype 1:1 als echte Web-App umgesetzt (Claude Code Handoff)
+  - 13 Komponenten: `Ic`, `StatusBar`, `TabBar`, `TravelDoc`, `WanderlyLogo`, `DocsSheet`, `ShareSheet`, `AddTripSheet`, `DeleteConfirmSheet`, `FamilyEditSheet`, `ActivitySheet`, `Toast`, `Progress`
+  - 6 Screens: `HomeScreen`, `TripDetail`, `ItineraryScreen`, `InboxScreen`, `SplitScreen`, `MeScreen`
+  - `App.jsx` — State-basierter Router mit direction-aware Screen-Transitions (slideInRight/Left/Up/fade · 320ms cubic-bezier iOS-style)
+  - `src/styles/shared.js` — gemeinsames Style-Objekt (S)
+  - `src/styles/tokens.js` — Design Tokens (Farben, Fonts)
+  - `src/utils/dateHelpers.js` — `fmtDate`, `nightsBetween`
+  - `src/firebase.js` — Firebase init via `VITE_FIREBASE_*` Env-Vars
+- **GitHub Actions Deploy** — Push auf `main` → `npm run build` → `gh-pages` → live unter `ieeks.github.io/wanderly`
+- **`.env.local.example`** — Template für Firebase Credentials
+
+### Changed
+- **iOS Device Frame entfernt** — App rendert direkt ohne Phone-Rahmen (`max-width: 430px; margin: 0 auto; height: 100dvh`)
+- **Icons** — Inline-SVGs durch `lucide-react` ersetzt (via `Ic`-Wrapper)
+- **Dateistruktur** — Einzelne JSX-Datei aufgeteilt in components/ + screens/ + data/ + styles/ + utils/
 
 ---
 
@@ -216,7 +235,8 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ---
 
-[Unreleased]: https://github.com/ieeks/wanderly/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/ieeks/wanderly/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/ieeks/wanderly/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/ieeks/wanderly/compare/v0.9.0...v1.0.0
 [0.9.0]: https://github.com/ieeks/wanderly/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/ieeks/wanderly/compare/v0.7.0...v0.8.0

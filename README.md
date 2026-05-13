@@ -2,7 +2,7 @@
 
 > Familien-Reise-Dashboard — Buchungen, Dokumente, Kosten & Teilen auf einen Blick.
 
-**Status:** Prototype · v0.6.0 · Mai 2026
+**Status:** v1.1.0 · live · Mai 2026 · [ieeks.github.io/wanderly](https://ieeks.github.io/wanderly)
 
 ---
 
@@ -14,17 +14,18 @@ Kein Login für Mitlesende, keine monatlichen Abo-Kosten, keine Werbung. Eigene 
 
 ---
 
-## Features (Prototype)
+## Features (v1 · live)
 
 | Screen | Was es kann |
 |--------|-------------|
-| **Home** | Reise-Karten als Stapel oder Liste, chronologisch sortiert, vergangene Trips getrennt |
-| **Trip Detail** | Boarding Pass / Zugticket / Fahrt-Card, Hotel, Extras, Budget-Übersicht |
-| **Add Trip** | 4-Schritt Flow: Basics → Anreise → Unterkunft → Budget (aufgeschlüsselt) |
+| **Home** | Reise-Karten als Stapel oder Liste, chronologisch sortiert, vergangene Trips getrennt, FAB + Empty State |
+| **Trip Detail** | Boarding Pass / Zugticket / Fahrt-Card, Hotel, Extras, Budget-Übersicht, ··· Menü (Bearbeiten / Löschen) |
+| **Add / Edit Trip** | 4-Schritt Flow: Basics → Anreise (80+ Airports) → Unterkunft → Budget (aufgeschlüsselt) |
+| **Itinerary** | Tag-für-Tag Tagesplan · Add / Edit / Delete Aktivitäten · 14 Kategorien · Auto-Sort nach Uhrzeit |
 | **Dokumente** | PDF-Liste pro Trip mit Status, QR + Download |
 | **Teilen** | Read-only Link, WhatsApp, AirDrop, Preis-Versteck-Toggle |
-| **Inbox** | Auto-geparste E-Mails mit Trip-Tags |
-| **Familie** | Split & Settle — wer schuldet wem wieviel |
+| **Inbox** | Auto-geparste E-Mails mit Unread-Dots, Trip-Tags, Notification Badge |
+| **Familie** | Split & Settle · Add / Edit / Delete Reisende · Avatar-Vorschau · 8 Farben |
 | **Ich** | Profil, Gmail-Sync Status, Settings |
 
 ---
@@ -44,21 +45,27 @@ Kein Login für Mitlesende, keine monatlichen Abo-Kosten, keine Werbung. Eigene 
 
 ---
 
-## Projekt-Struktur (geplant)
+## Projekt-Struktur
 
 ```
 wanderly/
 ├── src/
 │   ├── components/
-│   │   ├── Ic.jsx                  ← Lucide Icon wrapper
+│   │   ├── Ic.jsx                  ← lucide-react wrapper
+│   │   ├── StatusBar.jsx
+│   │   ├── TabBar.jsx              ← mit Notification Badge
 │   │   ├── TravelDoc.jsx           ← Boarding Pass / Zug / Auto
+│   │   ├── WanderlyLogo.jsx        ← SVG · icon-only + wordmark
 │   │   ├── DocsSheet.jsx
 │   │   ├── ShareSheet.jsx
-│   │   ├── AddTripSheet.jsx
+│   │   ├── AddTripSheet.jsx        ← 4-Schritt Flow + Airport-Suche
 │   │   ├── DeleteConfirmSheet.jsx
+│   │   ├── FamilyEditSheet.jsx
+│   │   ├── ActivitySheet.jsx       ← Itinerary CRUD
+│   │   ├── Toast.jsx
 │   │   └── Progress.jsx
 │   ├── screens/
-│   │   ├── HomeScreen.jsx
+│   │   ├── HomeScreen.jsx          ← Card-Stack + Liste + Empty State
 │   │   ├── TripDetail.jsx
 │   │   ├── ItineraryScreen.jsx
 │   │   ├── InboxScreen.jsx
@@ -67,11 +74,15 @@ wanderly/
 │   ├── data/
 │   │   └── mockData.js             ← TRIPS, FAMILY, INBOX (→ Firestore)
 │   ├── styles/
-│   │   └── tokens.js               ← Design Tokens
+│   │   ├── tokens.js               ← Design Tokens
+│   │   └── shared.js               ← gemeinsames S-Style-Objekt
+│   ├── utils/
+│   │   └── dateHelpers.js
 │   ├── firebase.js
-│   └── App.jsx
+│   └── App.jsx                     ← State-Router + Transitions
 ├── .github/workflows/
-│   └── deploy.yml
+│   └── deploy.yml                  ← GitHub Actions → gh-pages
+├── .env.local.example
 ├── README.md
 ├── CHANGELOG.md
 └── WANDERLY_ROADMAP.md
@@ -117,11 +128,10 @@ npm install
 npm run dev
 ```
 
-Firebase Config in `.env.local`:
+Firebase Config in `.env.local` (Template: `.env.local.example`):
 ```
 VITE_FIREBASE_API_KEY=...
-VITE_FIREBASE_PROJECT_ID=...
-VITE_FIREBASE_STORAGE_BUCKET=...
+VITE_FIREBASE_APP_ID=...
 ```
 
 ---
@@ -144,4 +154,4 @@ Push auf `main` → GitHub Actions baut + deployed automatisch nach `manuel-app.
 
 ---
 
-*Prototype gebaut mit Claude Design · Mai 2026*
+*Prototype: Claude Design · Mai 2026 · v1 App: Claude Code · Mai 2026*

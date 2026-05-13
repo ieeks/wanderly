@@ -54,7 +54,7 @@ family/{familyId}/members/{memberId}
 
 ---
 
-## Prototype-Stand (aktuell) · v1.0.0
+## Prototype-Stand · v1.0.0 (abgeschlossen)
 
 - [x] Home · Card-Stack (Stapel/Liste-Toggle)
 - [x] Home · Sortierung chronologisch, Vergangene Trips getrennt
@@ -85,37 +85,31 @@ family/{familyId}/members/{memberId}
 
 ---
 
-## Nächste Schritte
+## Claude Code Handoff · v1.1.0 · erledigt ✓
 
-### Prototype · noch offen (vor Claude Code Handoff)
-- ✅ Alle geplanten Prototype-Features umgesetzt — bereit für Claude Code Handoff!
-
-### Prototype · erledigt ✓
-- [x] Home · Card-Stack, Stapel/Liste, Sortierung, Vergangene Trips getrennt
-- [x] Add Trip Flow · 4 Schritte · Flughafen-Suche (80+ Airports) · Budget aufgeschlüsselt
-- [x] Edit Trip · Prefill · vollständiger CRUD-Kreis (C/R/U/D)
-- [x] Delete Trip · Bestätigungs-Sheet
-- [x] Empty State · Logo + floating Emojis + CTA + Gmail-Hint
-- [x] Notification Badge · Inbox-Tab Unread-Count · State in App geliftet
-- [x] Screen Transitions · direction-aware push/pop/tab/fade · 320ms cubic-bezier
-- [x] wanderly Logo · SVG · icon-only + wordmark horizontal
-- [x] Trip Detail · Boarding Pass / Zug / Auto · Hotel · Extras · Budget
-- [x] Dokumente Sheet · PDF-Liste · Status-Badges · QR + Download
-- [x] Share Sheet · Link · WhatsApp · AirDrop · Toggles
-- [x] Inbox · geparste E-Mails · Unread-Dots · Trip-Tags
-- [x] Itinerary Screen · Timeline (Wachau)
-- [x] Split & Settle · Kostenaufteilung Familie
-- [x] Me / Settings · Profil · Gmail-Sync Status
-- [x] Family/Reisende CRUD · FamilyEditSheet · Add/Edit/Delete · Avatar-Vorschau · 8 Farben
-- [x] Itinerary CRUD · ActivitySheet · Add/Edit/Delete · 14 Kategorien · Auto-Sort nach Uhrzeit · Tage aus Datum-Range generiert
+- [x] Vite + React Projekt-Setup (`npm create vite`, `npm install firebase lucide-react`)
+- [x] iOS Device Frame entfernt · App rendert direkt ohne Phone-Rahmen
+- [x] Dateistruktur angelegt: `components/` · `screens/` · `data/` · `styles/` · `utils/`
+- [x] 13 Komponenten extrahiert aus Prototype
+- [x] 6 Screens extrahiert aus Prototype
+- [x] `src/styles/shared.js` — gemeinsames S-Style-Objekt
+- [x] `src/styles/tokens.js` — Design Tokens (Farben, Fonts)
+- [x] `src/utils/dateHelpers.js` — `fmtDate`, `nightsBetween`
+- [x] `src/firebase.js` — Firebase init via `VITE_FIREBASE_*` Env-Vars
+- [x] `lucide-react` Icons via `Ic`-Wrapper (statt inline SVGs)
+- [x] Screen Transitions · direction-aware · 1:1 aus Prototype übernommen
+- [x] GitHub Actions Deploy Workflow · Push → Build → `gh-pages`
+- [x] `.env.local.example` · GitHub Secrets angelegt ✓
+- [x] **Live:** `https://ieeks.github.io/wanderly` ✅
 
 ---
 
-## v1 App · Feature-Roadmap (Claude Code)
+## v1 App · Feature-Roadmap (nächste Schritte)
 
 ### Kern
+- [x] ~~Vite + React Setup · GitHub Pages Deploy~~ ✅ v1.1.0
 - [ ] Firestore Persistenz — Trips, Dokumente, Inbox
-- [ ] Add/Edit Trip → schreibt nach Firestore
+- [ ] Add/Edit Trip → schreibt nach Firestore (statt Mock-Daten)
 - [ ] Search / Filter — Trips nach Jahr, Status, Destination
 - [ ] Boarding Pass Fullscreen — Vollbild für Gate-Vorzeigen, QR-Code, screen.wakeLock (PWA)
 
