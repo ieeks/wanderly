@@ -2,7 +2,7 @@
 
 > Familien-Reise-Dashboard — Buchungen, Dokumente, Kosten & Teilen auf einen Blick.
 
-**Status:** v1.1.0 · live · Mai 2026 · [ieeks.github.io/wanderly](https://ieeks.github.io/wanderly)
+**Status:** v1.2.0 · live · Mai 2026 · [ieeks.github.io/wanderly](https://ieeks.github.io/wanderly)
 
 ---
 
@@ -72,7 +72,9 @@ wanderly/
 │   │   ├── SplitScreen.jsx
 │   │   └── MeScreen.jsx
 │   ├── data/
-│   │   └── mockData.js             ← TRIPS, FAMILY, INBOX (→ Firestore)
+│   │   └── mockData.js             ← Seed-Quelle + Fallback (Firestore ist live)
+│   ├── hooks/
+│   │   └── useFirestore.js         ← useCollection (onSnapshot Realtime)
 │   ├── styles/
 │   │   ├── tokens.js               ← Design Tokens
 │   │   └── shared.js               ← gemeinsames S-Style-Objekt
@@ -80,8 +82,12 @@ wanderly/
 │   │   └── dateHelpers.js
 │   ├── firebase.js
 │   └── App.jsx                     ← State-Router + Transitions
+├── scripts/
+│   └── seed.js                     ← Firestore einmalig befüllen (npm run seed)
 ├── .github/workflows/
 │   └── deploy.yml                  ← GitHub Actions → gh-pages
+├── firestore.rules
+├── firebase.json
 ├── .env.local.example
 ├── README.md
 ├── CHANGELOG.md
@@ -109,8 +115,8 @@ Mono:     JetBrains Mono (Labels, Codes, IATA)
 
 ## Datenstrategie
 
-1. **Prototype** — statische Mock-Daten in `mockData.js`
-2. **v1** — manuelles Add-Trip Formular → Firestore
+1. **Prototype** — statische Mock-Daten in `mockData.js` ✅
+2. **v1** — Firestore live · Add/Edit/Delete → Realtime via `onSnapshot` ✅
 3. **v2** — Gmail Sync: Label `Reisen` → IMAP → GPT-4o-mini → Firestore
 4. **v3** — vollautomatisch mit Push-Notifications
 

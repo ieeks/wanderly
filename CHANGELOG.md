@@ -9,13 +9,31 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 ## [Unreleased]
 
 ### Planned · v1 App · nächste Schritte
-- Add / Edit Trip → Firestore persistieren (statt Mock-Daten)
 - Search / Filter — Trips nach Jahr, Status, Destination
 - PDF Viewer — in-app PDF öffnen
 - WhatsApp Deep Link (echte wa.me URL)
 - Boarding Pass Fullscreen — Vollbild für Gate · QR · screen.wakeLock
 - Gmail Sync: Label `Reisen` → IMAP → GPT-4o-mini → Firestore
 - Desktop Version
+
+---
+
+## [1.2.0] — 2026-05-13
+
+### Added
+- **Firestore Integration** — App liest und schreibt live aus Firestore (`europe-west3`)
+  - `src/hooks/useFirestore.js` — `useCollection` Hook mit `onSnapshot` (Realtime Updates)
+  - Alle CRUD-Handler in `App.jsx` async mit Firestore writes: Add/Edit/Delete Trip, Itinerary, Family, Inbox Mark Read
+  - Loading Spinner (WanderlyLogo) während Firestore-Fetch
+  - `mockData.js` bleibt als Fallback und Seed-Quelle erhalten
+- **Seed Script** — `scripts/seed.js` befüllt Firestore einmalig mit Mock-Daten (`npm run seed`)
+- **Firestore Rules** — `firestore.rules` + `firebase.json` (open read/write, kein Auth)
+
+### Fixed
+- **Stack Badge** — "+X weitere · alle zeigen" erscheint jetzt korrekt bei mehr als 4 Trips (Bedingung war `upcoming.length` statt `sorted.length`)
+
+### Changed
+- **InboxScreen** — `setItems` durch `onMarkRead` Prop ersetzt (schreibt `{ read: true }` nach Firestore mit `merge: true`)
 
 ---
 
@@ -235,7 +253,8 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ---
 
-[Unreleased]: https://github.com/ieeks/wanderly/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/ieeks/wanderly/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/ieeks/wanderly/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/ieeks/wanderly/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/ieeks/wanderly/compare/v0.9.0...v1.0.0
 [0.9.0]: https://github.com/ieeks/wanderly/compare/v0.8.0...v0.9.0
