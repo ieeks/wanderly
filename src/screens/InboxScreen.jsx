@@ -7,7 +7,7 @@ export default function InboxScreen({ items, onMarkRead, onTab, onOpenTrip }) {
   const unread = items.filter(i => !i.read).length;
   return (
     <div style={S.screen}>
-      <div style={{ ...S.scroll, paddingTop:56, paddingBottom:100 }}>
+      <div style={{ ...S.scroll, paddingTop:56, paddingBottom:110 }}>
         <div style={{ ...S.px, marginBottom:16 }}>
           <div style={{ fontFamily:"monospace", fontSize:9, letterSpacing:"0.16em", textTransform:"uppercase", color:"#9F8A6F" }}>Automatisch geparst</div>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", marginTop:2 }}>

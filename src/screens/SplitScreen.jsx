@@ -14,7 +14,7 @@ export default function SplitScreen({ onTab, inboxBadge = 0, family }) {
   ];
   return (
     <div style={S.screen}>
-      <div style={{ ...S.scroll, paddingTop:56, paddingBottom:100 }}>
+      <div style={{ ...S.scroll, paddingTop:56, paddingBottom:110 }}>
         <div style={{ ...S.px, display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:12 }}>
           <div>
             <div style={{ fontFamily:"monospace", fontSize:9, letterSpacing:"0.16em", textTransform:"uppercase", color:"#9F8A6F" }}>Familie · 2026</div>

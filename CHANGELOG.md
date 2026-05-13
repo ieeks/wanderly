@@ -17,6 +17,15 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ---
 
+## [1.4.0] — 2026-05-13
+
+### Changed
+- **Floating Pill Tab Bar** — Tab Bar schwebt als abgerundete Pill mit Glasmorphism (blur 20px, cream 82% opacity, Schatten) losgelöst vom Inhalt; Safe Area (`env(safe-area-inset-bottom)`) berücksichtigt
+- **Aktiver Tab** — leichtes terra-Highlight (`rgba(201,111,74,0.1)`) im aktiven Tab-Button
+- **paddingBottom** — alle Scroll-Container angepasst (+10px) damit letzter Inhalt nicht hinter Pill verschwindet
+
+---
+
 ## [1.3.1] — 2026-05-13
 
 ### Fixed
@@ -272,7 +281,8 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ---
 
-[Unreleased]: https://github.com/ieeks/wanderly/compare/v1.3.1...HEAD
+[Unreleased]: https://github.com/ieeks/wanderly/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/ieeks/wanderly/compare/v1.3.1...v1.4.0
 [1.3.1]: https://github.com/ieeks/wanderly/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/ieeks/wanderly/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/ieeks/wanderly/compare/v1.1.0...v1.2.0

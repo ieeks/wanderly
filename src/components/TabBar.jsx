@@ -9,13 +9,13 @@ export default function TabBar({ active, onChange, badges = {} }) {
     { id:"me",    icon:"CircleUser",label:"Ich"     },
   ];
   return (
-    <div style={S.tabbar}>
+    <div style={S.tabbar} className="tab-bar-pill">
       {tabs.map(t => {
         const on    = active === t.id;
         const badge = badges[t.id] || 0;
         return (
           <div key={t.id} onClick={() => onChange(t.id)}
-            style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:3, padding:"5px 10px", cursor:"pointer", position:"relative" }}>
+            style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:3, padding:"4px 14px", borderRadius:20, cursor:"pointer", position:"relative", flex:1, background: on ? "rgba(201,111,74,0.1)" : "transparent", transition:"background 200ms" }}>
             <div style={{ position:"relative", display:"inline-flex" }}>
               <Ic name={t.icon} size={22} color={on ? "#C96F4A" : "#9F8A6F"} />
               {badge > 0 && (
