@@ -8,7 +8,9 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "seed": "node --env-file=.env.local scripts/seed.js"
+    "seed": "node --env-file=.env.local scripts/seed.js",
+    "airports": "node scripts/generate-airports.js --update",
+    "airports:refresh": "node scripts/generate-airports.js --refresh-wikidata --update"
   },
   "dependencies": {
     "firebase": "^12.13.0",
