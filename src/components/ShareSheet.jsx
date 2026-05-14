@@ -1,18 +1,34 @@
 import { useState } from 'react';
 import Ic from './Ic.jsx';
 import WanderlyLogo from './WanderlyLogo.jsx';
+import ShareCard from './ShareCard.jsx';
+import { useShareCard } from '../hooks/useShareCard.js';
 import { S } from '../styles/shared.js';
 
-export default function ShareSheet({ trip, onClose, onSent }) {
+export default function ShareSheet({ trip, family, onClose, onSent }) {
   const [hidePrices, setHidePrices] = useState(true);
-  const [expires, setExpires] = useState(true);
+  const [expires, setExpires]       = useState(true);
+  const [generating, setGenerating] = useState(false);
+  const { cardRef, generateAndShare } = useShareCard();
+
+  async function handleImageShare() {
+    setGenerating(true);
+    try {
+      await generateAndShare(trip.name);
+    } catch (e) {
+      if (e.name !== 'AbortError') console.error('Share error:', e);
+    }
+    setGenerating(false);
+  }
+
   const rows = [
-    { cls:"#25D366", icon:"MessageCircle", label:"Olga · WhatsApp",    sub:"letzte Nachricht vor 2h",     who:"Olga" },
-    { cls:"#25D366", icon:"Users",         label:"Familie",             sub:"WhatsApp Gruppe · 6",         who:"Familie" },
-    { cls:"#7BA8B8", icon:"Mail",          label:"Oma & Opa",          sub:"oma@example.at",               who:"Oma & Opa" },
-    { cls:"#5856D6", icon:"Wifi",          label:"AirDrop",            sub:"3 Geräte in der Nähe",         who:null },
-    { cls:"#F5EAD4", icon:"Link2",         label:"Link kopieren",      sub:"wanderly.app/s/x7p2…",        who:null },
+    { cls:"#25D366", icon:"MessageCircle", label:"Olga · WhatsApp",   sub:"letzte Nachricht vor 2h",  who:"Olga"      },
+    { cls:"#25D366", icon:"Users",         label:"Familie",            sub:"WhatsApp Gruppe · 6",      who:"Familie"   },
+    { cls:"#7BA8B8", icon:"Mail",          label:"Oma & Opa",         sub:"oma@example.at",            who:"Oma & Opa" },
+    { cls:"#5856D6", icon:"Wifi",          label:"AirDrop",           sub:"3 Geräte in der Nähe",      who:null        },
+    { cls:"#F5EAD4", icon:"Link2",         label:"Link kopieren",     sub:"wanderly.app/s/x7p2…",      who:null        },
   ];
+
   return (
     <>
       <div style={{ position:"absolute", inset:0, background:"rgba(45,31,21,0.45)", zIndex:30 }} onClick={onClose} />
@@ -43,6 +59,27 @@ export default function ShareSheet({ trip, onClose, onSent }) {
             </div>
           ))}
         </div>
+
+        {/* Als Bild teilen — erste Row */}
+        <div onClick={handleImageShare}
+          style={{ display:"flex", alignItems:"center", gap:12, padding:"11px 4px",
+            borderBottom:"1px solid rgba(45,31,21,0.06)", cursor:"pointer" }}>
+          <div style={{ width:38, height:38, borderRadius:"50%",
+            background:"linear-gradient(135deg,#C96F4A,#E6B545)",
+            display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+            {generating
+              ? <span style={{ fontSize:16 }}>⏳</span>
+              : <Ic name="Image" size={17} color="white" />}
+          </div>
+          <div style={{ flex:1 }}>
+            <div style={{ fontSize:13, fontWeight:600 }}>
+              {generating ? 'Bild wird erstellt…' : 'Als Bild teilen'}
+            </div>
+            <div style={{ fontSize:11, color:"#9F8A6F" }}>PNG · ideal für WhatsApp & Instagram</div>
+          </div>
+          <Ic name="ChevronRight" size={15} color="rgba(45,31,21,0.25)" />
+        </div>
+
         {rows.map((r,i) => (
           <div key={i} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 4px", borderBottom: i<rows.length-1?"1px solid rgba(45,31,21,0.06)":"none", cursor:"pointer" }} onClick={() => r.who && onSent(r.who)}>
             <div style={{ width:38, height:38, borderRadius:"50%", background:r.cls, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
@@ -56,6 +93,9 @@ export default function ShareSheet({ trip, onClose, onSent }) {
           </div>
         ))}
       </div>
+
+      {/* Hidden card rendered for html2canvas */}
+      <ShareCard ref={cardRef} trip={trip} family={family || []} />
     </>
   );
 }
