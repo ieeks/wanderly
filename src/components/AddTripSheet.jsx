@@ -138,8 +138,14 @@ export default function AddTripSheet({ onClose, onAdd, onSave, initialTrip }) {
     const costRental = parseInt(form.costRental) || 0;
     const costOther  = parseInt(form.costOther)  || 0;
     const total = costFlight + costHotel + costRental + costOther;
+    const slug = form.name.toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '') // strip accents
+      .replace(/[^a-z0-9]+/g, '');
+    const monthYear = form.dateFrom
+      ? new Date(form.dateFrom).toLocaleDateString('de-AT', { month:'short', year:'2-digit' }).replace('. ','').replace(' ','')
+      : Date.now();
     const newTrip = {
-      id: 'trip_' + Date.now(),
+      id: 'trip_' + slug + monthYear,
       name: form.name,
       emoji: form.emoji,
       dates: fmtDate(form.dateFrom) + ' – ' + fmtDate(form.dateTo),

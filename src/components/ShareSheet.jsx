@@ -14,7 +14,8 @@ export default function ShareSheet({ trip, family, onClose, onSent }) {
   const [copied, setCopied]         = useState(false);
   const { cardRef, generateAndShare } = useShareCard();
 
-  const shareUrl = window.location.href;
+  const base = window.location.href.split('#')[0].replace(/\/$/, '');
+  const shareUrl = `${base}/#${trip.id}`;
 
   async function handleImageShare() {
     setGenerating(true);
