@@ -122,6 +122,7 @@ family/{familyId}/members/{memberId}
 - [ ] Gmail Sync — Label `Reisen` → IMAP → GPT-4o-mini → Firestore
 
 ### Familie & Sharing
+- [x] ~~Share Card als Bild — 1080×1080 JPEG via html2canvas · iOS Share Sheet~~ ✅ v1.5.0
 - [ ] Read-only Link — shareable URL ohne Login
 - [ ] WhatsApp Deep Link — echte wa.me URL
 - [ ] Family Permissions — wer sieht Preise, wer kann bearbeiten
