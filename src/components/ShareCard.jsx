@@ -75,7 +75,7 @@ const ShareCard = forwardRef(({ trip, family }, ref) => {
                 width: 72, height: 72, borderRadius: '50%',
                 background: f.bg || '#C96F4A',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 26, fontWeight: 700, color: '#FBF4E6',
+                fontSize: 26, fontWeight: 700, color: '#2D1F15',
                 boxShadow: '0 0 0 4px rgba(255,255,255,0.85)',
                 marginLeft: i > 0 ? -22 : 0,
                 position: 'relative', zIndex: family.length - i,

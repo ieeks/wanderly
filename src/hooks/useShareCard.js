@@ -8,20 +8,18 @@ export function useShareCard() {
     if (!cardRef.current) return;
 
     const canvas = await html2canvas(cardRef.current, {
-      width: 1080,
-      height: 1080,
-      scale: 1,
+      scale: 0.7,
       useCORS: true,
-      backgroundColor: null,
+      backgroundColor: '#ffffff',
       logging: false,
     });
 
     const blob = await new Promise(resolve =>
-      canvas.toBlob(resolve, 'image/png', 1.0)
+      canvas.toBlob(resolve, 'image/jpeg', 0.92)
     );
 
     const slug = tripName.toLowerCase().replace(/\s+/g, '-');
-    const file = new File([blob], `wanderly-${slug}.png`, { type: 'image/png' });
+    const file = new File([blob], `wanderly-${slug}.jpg`, { type: 'image/jpeg' });
 
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       await navigator.share({ files: [file], title: `${tripName} · wanderly` });
@@ -30,7 +28,7 @@ export function useShareCard() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `wanderly-${slug}.png`;
+      a.download = `wanderly-${slug}.jpg`;
       a.click();
       URL.revokeObjectURL(url);
     }
