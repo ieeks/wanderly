@@ -12,6 +12,7 @@ import SplitScreen from './screens/SplitScreen.jsx';
 import MeScreen from './screens/MeScreen.jsx';
 
 import ShareSheet from './components/ShareSheet.jsx';
+import ExpenseSheet from './components/ExpenseSheet.jsx';
 import DocsSheet from './components/DocsSheet.jsx';
 import AddTripSheet from './components/AddTripSheet.jsx';
 import DeleteConfirmSheet from './components/DeleteConfirmSheet.jsx';
@@ -55,12 +56,14 @@ export default function App() {
   const [editTrip, setEditTrip]       = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [toast, setToast]             = useState(null);
+  const [expenseSheet, setExpenseSheet] = useState(null); // null | 'add' | expense-object
 
-  const { data: trips,      loading: tripsLoading  } = useCollection('trips',  TRIPS);
-  const { data: family,     loading: familyLoading } = useCollection('family', FAMILY);
-  const { data: inboxItems, loading: inboxLoading  } = useCollection('inbox',  INBOX);
+  const { data: trips,      loading: tripsLoading    } = useCollection('trips',    TRIPS);
+  const { data: family,     loading: familyLoading   } = useCollection('family',   FAMILY);
+  const { data: inboxItems, loading: inboxLoading    } = useCollection('inbox',    INBOX);
+  const { data: expenses,   loading: expensesLoading } = useCollection('expenses', []);
 
-  const loading = tripsLoading || familyLoading || inboxLoading;
+  const loading = tripsLoading || familyLoading || inboxLoading || expensesLoading;
   const unreadCount = inboxItems.filter(i => !i.read).length;
 
   const ROUTE_DEPTH = { home:0, inbox:0, split:0, me:0, detail:1, itinerary:2 };
@@ -115,6 +118,27 @@ export default function App() {
     }
   }
 
+  async function handleAddExpense(expense) {
+    await setDoc(doc(db, 'expenses', expense.id), expense);
+  }
+
+  async function handleEditExpense(expense) {
+    await setDoc(doc(db, 'expenses', expense.id), expense);
+  }
+
+  async function handleDeleteExpense(id) {
+    await deleteDoc(doc(db, 'expenses', id));
+  }
+
+  async function handleSettleAll() {
+    const unsettled = expenses.filter(e => !e.settled);
+    await Promise.all(unsettled.map(e =>
+      setDoc(doc(db, 'expenses', e.id), { ...e, settled: true })
+    ));
+    setToast('Alle Ausgaben beglichen');
+    setTimeout(() => setToast(null), 2000);
+  }
+
   async function handleMarkRead(id) {
     await setDoc(doc(db, 'inbox', String(id)), { read: true }, { merge: true });
   }
@@ -150,12 +174,13 @@ export default function App() {
       {route === 'detail'    && <AnimatedScreen key="detail"    direction={getDir('detail')}>    <TripDetail      tripId={tripId} trips={trips} family={family} onBack={() => go('home')} onShare={() => setShare(tripId)} onItinerary={id => go('itinerary', id)} onDocs={() => setDocs(true)} onDelete={t => setDeleteConfirm(t)} onEdit={t => { setEditTrip(t); setAddTrip(true); }} /></AnimatedScreen>}
       {route === 'itinerary' && <AnimatedScreen key="itinerary" direction={getDir('itinerary')}><ItineraryScreen tripId={tripId} trips={trips} onBack={() => go('detail')} onUpdateTrip={updateTripItinerary} /></AnimatedScreen>}
       {route === 'inbox'     && <AnimatedScreen key="inbox"     direction={getDir('inbox')}>     <InboxScreen     items={inboxItems} onMarkRead={handleMarkRead} onTab={tab} onOpenTrip={id => go('detail', id)} /></AnimatedScreen>}
-      {route === 'split'     && <AnimatedScreen key="split"     direction={getDir('split')}>     <SplitScreen     onTab={tab} inboxBadge={unreadCount} family={family} /></AnimatedScreen>}
+      {route === 'split'     && <AnimatedScreen key="split"     direction={getDir('split')}>     <SplitScreen     onTab={tab} inboxBadge={unreadCount} family={family} expenses={expenses} onAddExpense={() => setExpenseSheet('add')} onEditExpense={e => setExpenseSheet(e)} onSettleAll={handleSettleAll} /></AnimatedScreen>}
       {route === 'me'        && <AnimatedScreen key="me"        direction={getDir('me')}>        <MeScreen        onTab={tab} inboxBadge={unreadCount} family={family} onEditPerson={handleEditPerson} /></AnimatedScreen>}
 
       {share && shareTrip && <ShareSheet trip={shareTrip} family={family} onClose={() => setShare(null)} onSent={sent} />}
       {docs && route === 'detail' && <DocsSheet trip={trips.find(t => t.id === tripId) || trips[0]} onClose={() => setDocs(false)} />}
       {addTrip && <AddTripSheet onClose={() => { setAddTrip(false); setEditTrip(null); }} onAdd={handleAddTrip} onSave={handleSaveTrip} initialTrip={editTrip} />}
+      {expenseSheet && <ExpenseSheet expense={expenseSheet === 'add' ? null : expenseSheet} family={family} onSave={expenseSheet === 'add' ? handleAddExpense : handleEditExpense} onDelete={handleDeleteExpense} onClose={() => setExpenseSheet(null)} />}
       {deleteConfirm && <DeleteConfirmSheet trip={deleteConfirm} onCancel={() => setDeleteConfirm(null)} onConfirm={deleteTrip} />}
       {toast && <Toast msg={toast} />}
     </div>

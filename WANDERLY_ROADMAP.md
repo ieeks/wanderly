@@ -130,7 +130,8 @@ family/{familyId}/members/{memberId}
 - [ ] Reise-Zusammenfassung — shareable Trip Card als Bild (html2canvas)
 
 ### Finanzen
-- [ ] Expense Tracker — Ausgaben während der Reise
+- [x] ~~Split & Settle — Ausgaben erfassen, 50/50 Saldo berechnen, "Beglichen" Button~~ ✅ v1.6.0
+- [ ] Expense Tracker — Ausgaben während der Reise (trip-spezifisch)
 - [ ] Budget vs. Actual — geplant vs. ausgegeben
 - [ ] Währungsumrechnung — open.er-api.com
 - [ ] Fälligkeits-Reminder — Push wenn Anzahlung fällig

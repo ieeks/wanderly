@@ -2,7 +2,7 @@
 
 > Familien-Reise-Dashboard — Buchungen, Dokumente, Kosten & Teilen auf einen Blick.
 
-**Status:** v1.5.1 · live · Mai 2026 · [ieeks.github.io/wanderly](https://ieeks.github.io/wanderly)
+**Status:** v1.6.0 · live · Mai 2026 · [ieeks.github.io/wanderly](https://ieeks.github.io/wanderly)
 
 ---
 
@@ -25,7 +25,7 @@ Kein Login für Mitlesende, keine monatlichen Abo-Kosten, keine Werbung. Eigene 
 | **Dokumente** | PDF-Liste pro Trip mit Status, QR + Download |
 | **Teilen** | Read-only Link, WhatsApp, AirDrop, Preis-Versteck-Toggle · **Share Card als JPEG** (html2canvas) |
 | **Inbox** | Auto-geparste E-Mails mit Unread-Dots, Trip-Tags, Notification Badge |
-| **Familie** | Split & Settle · Add / Edit / Delete Reisende · Avatar-Vorschau · 8 Farben |
+| **Familie** | Split & Settle · Ausgaben in Firestore · Auto-Saldo (50/50) · Beglichen-Button · Add / Edit / Delete Reisende · Avatar-Vorschau · 8 Farben |
 | **Ich** | Profil, Gmail-Sync Status, Settings |
 
 ---
