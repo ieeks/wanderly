@@ -17,6 +17,23 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ---
 
+## [1.6.0] — 2026-05-14
+
+### Added
+- **Split & Settle · Firestore** — Ausgaben werden in Firestore Collection `expenses` gespeichert · Realtime via `onSnapshot`
+- **ExpenseSheet** — Bottom Sheet zum Hinzufügen / Bearbeiten / Löschen von Ausgaben: Beschreibung, Betrag (€), 8 Kategorien (Flug, Unterkunft, Restaurant, Mietwagen, Versicherung, Shopping, Aktivität, Sonstiges), Auswahl wer bezahlt hat (aus Family)
+- **Auto-Saldo** — Hero-Card zeigt automatisch berechneten Schuldbetrag (50/50 Split, N Personen) · "X schuldet Y · € Betrag"
+- **Beglichen-Button** — markiert alle offenen Ausgaben auf `settled: true` in Firestore; Toast-Bestätigung
+- **FAB** — "+" Floating Action Button auf Split-Screen öffnet ExpenseSheet
+- **Tap-to-edit** — Tippen auf eine Ausgabe öffnet ExpenseSheet im Bearbeitungsmodus
+- **Settled Section** — beglichene Ausgaben erscheinen durchgestrichen + gedimmt unterhalb der offenen Liste
+- **Empty State** — 🧾 Illustration + Hinweis wenn noch keine Ausgaben vorhanden
+
+### Changed
+- **SplitScreen** — komplett auf Firestore-Daten umgestellt; statische Mock-Daten entfernt; Saldo wird live berechnet
+
+---
+
 ## [1.5.1] — 2026-05-14
 
 ### Added
