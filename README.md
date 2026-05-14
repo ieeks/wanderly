@@ -2,7 +2,7 @@
 
 > Familien-Reise-Dashboard — Buchungen, Dokumente, Kosten & Teilen auf einen Blick.
 
-**Status:** v1.4.2 · live · Mai 2026 · [ieeks.github.io/wanderly](https://ieeks.github.io/wanderly)
+**Status:** v1.5.0 · live · Mai 2026 · [ieeks.github.io/wanderly](https://ieeks.github.io/wanderly)
 
 ---
 
@@ -20,10 +20,10 @@ Kein Login für Mitlesende, keine monatlichen Abo-Kosten, keine Werbung. Eigene 
 |--------|-------------|
 | **Home** | Reise-Karten als Stapel oder Liste, chronologisch sortiert, vergangene Trips getrennt, FAB + Empty State |
 | **Trip Detail** | Boarding Pass / Zugticket / Fahrt-Card, Hotel, Extras, Budget-Übersicht, ··· Menü (Bearbeiten / Löschen) |
-| **Add / Edit Trip** | 4-Schritt Flow: Basics → Anreise (80+ Airports) → Unterkunft → Budget (aufgeschlüsselt) |
+| **Add / Edit Trip** | 4-Schritt Flow: Basics → Anreise (1178 Airports) → Unterkunft → Budget (aufgeschlüsselt) |
 | **Itinerary** | Tag-für-Tag Tagesplan · Add / Edit / Delete Aktivitäten · 14 Kategorien · Auto-Sort nach Uhrzeit |
 | **Dokumente** | PDF-Liste pro Trip mit Status, QR + Download |
-| **Teilen** | Read-only Link, WhatsApp, AirDrop, Preis-Versteck-Toggle |
+| **Teilen** | Read-only Link, WhatsApp, AirDrop, Preis-Versteck-Toggle · **Share Card als JPEG** (html2canvas) |
 | **Inbox** | Auto-geparste E-Mails mit Unread-Dots, Trip-Tags, Notification Badge |
 | **Familie** | Split & Settle · Add / Edit / Delete Reisende · Avatar-Vorschau · 8 Farben |
 | **Ich** | Profil, Gmail-Sync Status, Settings |

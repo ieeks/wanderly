@@ -17,6 +17,21 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ---
 
+## [1.5.0] — 2026-05-14
+
+### Added
+- **Share Card als Bild** — Trip als ~756×756 JPEG teilen (WhatsApp, Speichern etc.)
+  - `ShareCard.jsx` — versteckte 1080×1080 Karte (position: fixed, top: -9999): Reise-Hintergrundfarbe, Sun-Glow, Bottom-Gradient, wanderly Logo + Wordmark, großes Emoji, Familien-Avatare mit Overlap-Ring, Trip-Name (Georgia serif), Route + Daten, Pill-Row (Nächte · Gesamtkosten · Flugnummer)
+  - `useShareCard.js` — Hook: html2canvas (scale 0.7 → ~756px) → JPEG Blob → Web Share API mit File (iOS Share Sheet); Fallback: direkter Download
+  - `ShareSheet.jsx` — neue "Als Bild teilen" Row ganz oben (terra→sun Gradient Icon); ⏳ während Generierung; `family` Prop hinzugefügt
+  - `App.jsx` — `family` an `ShareSheet` weitergegeben
+
+### Fixed
+- **ShareCard Avatare** — Initialen-Schriftfarbe von cream `#FBF4E6` auf ink `#2D1F15` geändert (helle Gradient-Hintergründe machten weißen Text kaum lesbar)
+- **Dateigröße** — PNG (~2 MB) → JPEG 0.92 + scale 0.7 (~100–150 KB); keine sichtbare Qualitätseinbuße auf Smartphone-Displays
+
+---
+
 ## [1.4.2] — 2026-05-13
 
 ### Fixed
@@ -310,7 +325,8 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ---
 
-[Unreleased]: https://github.com/ieeks/wanderly/compare/v1.4.2...HEAD
+[Unreleased]: https://github.com/ieeks/wanderly/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/ieeks/wanderly/compare/v1.4.2...v1.5.0
 [1.4.2]: https://github.com/ieeks/wanderly/compare/v1.4.1...v1.4.2
 [1.4.1]: https://github.com/ieeks/wanderly/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/ieeks/wanderly/compare/v1.3.1...v1.4.0
