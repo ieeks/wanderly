@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Ic from './Ic.jsx';
+import { useSwipeDown } from '../hooks/useSwipeDown.js';
 import { S } from '../styles/shared.js';
 
 const CATEGORIES = [
@@ -20,6 +21,7 @@ export default function ExpenseSheet({ expense, family, onSave, onDelete, onClos
   const [catIdx, setCatIdx] = useState(expense?.catIdx  ?? 0);
   const [payerId,setPayerId]= useState(expense?.payerId || family[0]?.id || '');
   const [saving, setSaving] = useState(false);
+  const { sheetEl, onTouchStart, onTouchMove, onTouchEnd } = useSwipeDown(onClose);
 
   const cat = CATEGORIES[catIdx] || CATEGORIES[0];
 
@@ -49,7 +51,7 @@ export default function ExpenseSheet({ expense, family, onSave, onDelete, onClos
   return (
     <>
       <div style={{ position:"absolute", inset:0, background:"rgba(45,31,21,0.45)", zIndex:30 }} onClick={onClose} />
-      <div style={{ position:"absolute", left:0, right:0, bottom:0, background:"#FFFAF1", borderTopLeftRadius:24, borderTopRightRadius:24, padding:"10px 18px 36px", boxShadow:"0 -8px 28px rgba(45,31,21,0.16)", zIndex:31 }}>
+      <div ref={sheetEl} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd} style={{ position:"absolute", left:0, right:0, bottom:0, background:"#FFFAF1", borderTopLeftRadius:24, borderTopRightRadius:24, padding:"10px 18px 36px", boxShadow:"0 -8px 28px rgba(45,31,21,0.16)", zIndex:31 }}>
         <div style={{ width:36, height:4, borderRadius:2, background:"rgba(45,31,21,0.16)", margin:"0 auto 14px" }} />
 
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>

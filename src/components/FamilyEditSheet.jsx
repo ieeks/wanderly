@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Ic from './Ic.jsx';
+import { useSwipeDown } from '../hooks/useSwipeDown.js';
 
 const PERSON_COLORS = [
   { bg:"#F0B58A", fg:"#2D1F15", label:"Peach"  },
@@ -14,6 +15,7 @@ const PERSON_COLORS = [
 
 export default function FamilyEditSheet({ person, onClose, onSave, onDelete }) {
   const isEdit = !!person;
+  const { sheetEl, onTouchStart, onTouchMove, onTouchEnd } = useSwipeDown(onClose);
   const [name,  setName]  = useState(person?.name  || '');
   const [init,  setInit]  = useState(person?.init  || '');
   const [color, setColor] = useState(
@@ -39,7 +41,7 @@ export default function FamilyEditSheet({ person, onClose, onSave, onDelete }) {
   return (
     <>
       <div style={{ position:'absolute', inset:0, background:'rgba(45,31,21,0.45)', zIndex:32 }} onClick={onClose} />
-      <div style={{ position:'absolute', left:0, right:0, bottom:0, background:'#FFFAF1', borderTopLeftRadius:26, borderTopRightRadius:26, padding:'10px 18px 36px', zIndex:33 }}>
+      <div ref={sheetEl} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd} style={{ position:'absolute', left:0, right:0, bottom:0, background:'#FFFAF1', borderTopLeftRadius:26, borderTopRightRadius:26, padding:'10px 18px 36px', zIndex:33 }}>
         <div style={{ width:36, height:4, borderRadius:2, background:'rgba(45,31,21,0.16)', margin:'0 auto 14px' }} />
 
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20 }}>
