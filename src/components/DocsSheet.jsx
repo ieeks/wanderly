@@ -1,6 +1,8 @@
 import Ic from './Ic.jsx';
+import { useSwipeDown } from '../hooks/useSwipeDown.js';
 
 export default function DocsSheet({ trip, onClose }) {
+  const { sheetEl, onTouchStart, onTouchMove, onTouchEnd } = useSwipeDown(onClose);
   const docs = [
     { id:1, type:"Flugticket",          file:"FR180_VIE_SKG.pdf",        size:"284 KB", date:"15 Mär", icon:"Plane",     bg:"#D7E2C6", status:"bestätigt" },
     { id:2, type:"Buchungsbestätigung", file:"Potidea_Palace_conf.pdf",  size:"156 KB", date:"12 Feb", icon:"Building2", bg:"#F8DEC4", status:"bestätigt" },
@@ -10,7 +12,7 @@ export default function DocsSheet({ trip, onClose }) {
   return (
     <>
       <div style={{ position:"absolute", inset:0, background:"rgba(45,31,21,0.45)", zIndex:30 }} onClick={onClose} />
-      <div style={{ position:"absolute", left:0, right:0, bottom:0, background:"#FFFAF1", borderTopLeftRadius:26, borderTopRightRadius:26, padding:"10px 0 34px", boxShadow:"0 -8px 28px rgba(45,31,21,0.16)", zIndex:31 }}>
+      <div ref={sheetEl} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd} style={{ position:"absolute", left:0, right:0, bottom:0, background:"#FFFAF1", borderTopLeftRadius:26, borderTopRightRadius:26, padding:"10px 0 34px", boxShadow:"0 -8px 28px rgba(45,31,21,0.16)", zIndex:31 }}>
         <div style={{ width:36, height:4, borderRadius:2, background:"rgba(45,31,21,0.16)", margin:"0 auto 14px" }} />
         <div style={{ padding:"0 18px 14px", display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
           <div>

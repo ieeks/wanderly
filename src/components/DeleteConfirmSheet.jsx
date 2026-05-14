@@ -1,10 +1,12 @@
 import Ic from './Ic.jsx';
+import { useSwipeDown } from '../hooks/useSwipeDown.js';
 
 export default function DeleteConfirmSheet({ trip, onCancel, onConfirm }) {
+  const { sheetEl, onTouchStart, onTouchMove, onTouchEnd } = useSwipeDown(onCancel);
   return (
     <>
       <div style={{ position:'absolute', inset:0, background:'rgba(45,31,21,0.5)', zIndex:32 }} onClick={onCancel} />
-      <div style={{ position:'absolute', left:0, right:0, bottom:0, background:'#FFFAF1', borderTopLeftRadius:26, borderTopRightRadius:26, padding:'12px 18px 36px', zIndex:33 }}>
+      <div ref={sheetEl} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd} style={{ position:'absolute', left:0, right:0, bottom:0, background:'#FFFAF1', borderTopLeftRadius:26, borderTopRightRadius:26, padding:'12px 18px 36px', zIndex:33 }}>
         <div style={{ width:36, height:4, borderRadius:2, background:'rgba(45,31,21,0.16)', margin:'0 auto 18px' }} />
         <div style={{ width:52, height:52, borderRadius:16, background:'rgba(196,44,44,0.1)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 14px' }}>
           <Ic name="Trash2" size={24} color="#C42C2C" />

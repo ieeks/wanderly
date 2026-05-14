@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Ic from './Ic.jsx';
 import WanderlyLogo from './WanderlyLogo.jsx';
 import Progress from './Progress.jsx';
+import { useSwipeDown } from '../hooks/useSwipeDown.js';
 import { S } from '../styles/shared.js';
 import { fmtDate, nightsBetween } from '../utils/dateHelpers.js';
 import { AIRPORTS, TRIP_EMOJIS, TRIP_COLORS } from '../data/mockData.js';
@@ -89,6 +90,7 @@ export default function AddTripSheet({ onClose, onAdd, onSave, initialTrip }) {
   const [form, setForm] = useState(() => buildInitialForm(initialTrip));
   const [airportQuery, setAirportQuery] = useState(() => initAirportQuery(initialTrip));
   const [airportResults, setAirportResults] = useState([]);
+  const { sheetEl, onTouchStart, onTouchMove, onTouchEnd } = useSwipeDown(onClose);
 
   function set(key, val) { setForm(f => ({ ...f, [key]: val })); }
 
@@ -136,8 +138,14 @@ export default function AddTripSheet({ onClose, onAdd, onSave, initialTrip }) {
     const costRental = parseInt(form.costRental) || 0;
     const costOther  = parseInt(form.costOther)  || 0;
     const total = costFlight + costHotel + costRental + costOther;
+    const slug = form.name.toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '') // strip accents
+      .replace(/[^a-z0-9]+/g, '');
+    const monthYear = form.dateFrom
+      ? new Date(form.dateFrom).toLocaleDateString('de-AT', { month:'short', year:'2-digit' }).replace('. ','').replace(' ','')
+      : Date.now();
     const newTrip = {
-      id: 'trip_' + Date.now(),
+      id: 'trip_' + slug + monthYear,
       name: form.name,
       emoji: form.emoji,
       dates: fmtDate(form.dateFrom) + ' – ' + fmtDate(form.dateTo),
@@ -179,7 +187,7 @@ export default function AddTripSheet({ onClose, onAdd, onSave, initialTrip }) {
   return (
     <>
       <div style={{ position:'absolute', inset:0, background:'rgba(45,31,21,0.45)', zIndex:30 }} onClick={onClose} />
-      <div style={{ position:'absolute', left:0, right:0, bottom:0, background:'#FFFAF1', borderTopLeftRadius:26, borderTopRightRadius:26, zIndex:31, maxHeight:'88%', display:'flex', flexDirection:'column' }}>
+      <div ref={sheetEl} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd} style={{ position:'absolute', left:0, right:0, bottom:0, background:'#FFFAF1', borderTopLeftRadius:26, borderTopRightRadius:26, zIndex:31, maxHeight:'88%', display:'flex', flexDirection:'column' }}>
 
         <div style={{ padding:'10px 18px 0', flexShrink:0 }}>
           <div style={{ width:36, height:4, borderRadius:2, background:'rgba(45,31,21,0.16)', margin:'0 auto 14px' }} />

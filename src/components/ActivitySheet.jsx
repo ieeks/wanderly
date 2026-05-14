@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Ic from './Ic.jsx';
+import { useSwipeDown } from '../hooks/useSwipeDown.js';
 
 const ACTIVITY_ICONS = [
   { name:"Car",            label:"Auto"      },
@@ -20,6 +21,7 @@ const ACTIVITY_ICONS = [
 
 export default function ActivitySheet({ activity, dayLabel, onClose, onSave, onDelete }) {
   const isEdit = !!activity;
+  const { sheetEl, onTouchStart, onTouchMove, onTouchEnd } = useSwipeDown(onClose);
   const [time,  setTime]  = useState(activity?.time  || '');
   const [label, setLabel] = useState(activity?.label || '');
   const [sub,   setSub]   = useState(activity?.sub   || '');
@@ -32,7 +34,7 @@ export default function ActivitySheet({ activity, dayLabel, onClose, onSave, onD
   return (
     <>
       <div style={{ position:'absolute', inset:0, background:'rgba(45,31,21,0.45)', zIndex:34 }} onClick={onClose} />
-      <div style={{ position:'absolute', left:0, right:0, bottom:0, background:'#FFFAF1', borderTopLeftRadius:26, borderTopRightRadius:26, padding:'10px 18px 36px', zIndex:35, maxHeight:'90%', overflowY:'auto' }}>
+      <div ref={sheetEl} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd} style={{ position:'absolute', left:0, right:0, bottom:0, background:'#FFFAF1', borderTopLeftRadius:26, borderTopRightRadius:26, padding:'10px 18px 36px', zIndex:35, maxHeight:'90%', overflowY:'auto' }}>
         <div style={{ width:36, height:4, borderRadius:2, background:'rgba(45,31,21,0.16)', margin:'0 auto 14px' }} />
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:18 }}>
           <div>

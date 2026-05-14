@@ -3,16 +3,19 @@ import Ic from './Ic.jsx';
 import WanderlyLogo from './WanderlyLogo.jsx';
 import ShareCard from './ShareCard.jsx';
 import { useShareCard } from '../hooks/useShareCard.js';
+import { useSwipeDown } from '../hooks/useSwipeDown.js';
 import { S } from '../styles/shared.js';
 
 export default function ShareSheet({ trip, family, onClose, onSent }) {
   const [hidePrices, setHidePrices] = useState(true);
   const [expires, setExpires]       = useState(true);
+  const { sheetEl, onTouchStart, onTouchMove, onTouchEnd } = useSwipeDown(onClose);
   const [generating, setGenerating] = useState(false);
   const [copied, setCopied]         = useState(false);
   const { cardRef, generateAndShare } = useShareCard();
 
-  const shareUrl = window.location.href;
+  const base = window.location.href.split('#')[0].replace(/\/$/, '');
+  const shareUrl = `${base}/#${trip.id}`;
 
   async function handleImageShare() {
     setGenerating(true);
@@ -54,7 +57,7 @@ export default function ShareSheet({ trip, family, onClose, onSent }) {
   return (
     <>
       <div style={{ position:"absolute", inset:0, background:"rgba(45,31,21,0.45)", zIndex:30 }} onClick={onClose} />
-      <div style={{ position:"absolute", left:0, right:0, bottom:0, background:"#FFFAF1", borderTopLeftRadius:24, borderTopRightRadius:24, padding:"10px 18px 28px", boxShadow:"0 -8px 28px rgba(45,31,21,0.16)", zIndex:31 }}>
+      <div ref={sheetEl} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd} style={{ position:"absolute", left:0, right:0, bottom:0, background:"#FFFAF1", borderTopLeftRadius:24, borderTopRightRadius:24, padding:"10px 18px 28px", boxShadow:"0 -8px 28px rgba(45,31,21,0.16)", zIndex:31 }}>
         <div style={{ width:36, height:4, borderRadius:2, background:"rgba(45,31,21,0.16)", margin:"0 auto 12px" }} />
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:12 }}>
           <div>

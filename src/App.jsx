@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { db } from './firebase.js';
 import { useCollection } from './hooks/useFirestore.js';
@@ -150,6 +150,19 @@ export default function App() {
   }
 
   const shareTrip = share && trips.find(t => t.id === share);
+
+  // Deep-link: /#trip_ibizaApr26 → open that trip directly
+  useEffect(() => {
+    const hash = window.location.hash.slice(1); // strip leading #
+    if (hash && trips.length > 0) {
+      const target = trips.find(t => t.id === hash);
+      if (target) {
+        setTripId(target.id);
+        setRoute('detail');
+        window.location.hash = ''; // clean up URL after navigating
+      }
+    }
+  }, [trips]);
 
   if (loading) return (
     <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100dvh', background:'#FBF4E6' }}>
