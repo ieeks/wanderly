@@ -13,7 +13,22 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 - WhatsApp Deep Link (echte wa.me URL)
 - Boarding Pass Fullscreen — Vollbild für Gate · QR · screen.wakeLock
 - Gmail Sync: Label `Reisen` → IMAP → GPT-4o-mini → Firestore
-- Desktop Version
+
+---
+
+## [1.7.0] — 2026-05-14
+
+### Added
+- **Desktop Shell (Variant A)** — macOS-style App-Layout ab ≥ 1024px Viewport-Breite; mobile Layout unverändert darunter
+  - `DesktopApp.jsx` (~800 Zeilen) — vollständige Desktop-Implementierung nach Design Handoff
+  - **Sidebar** — 288px offen / 72px eingeklappt; Collapse-Toggle, Brand-Row, 7 Navigations-Items mit Badges, Trip-Liste, Familien-Footer
+  - **Titlebar** — macOS Ampel-Buttons (simuliert) + Breadcrumb-Pfad (wanderly › Familie 2026 › aktive View)
+  - **Boarding Pass** — flight / train / drive Varianten mit vollständiger Passagierliste
+  - **Dashboard-Widgets** — Countdown-Card (Tage bis Abflug), Budget-Card, Split-Mini-Card, Inbox-Mini-Card
+  - **7 Views** — Dashboard, TripDetail, Alle Reisen, Inbox, Split & Settle, Familie, Dokumente — alle Firestore-verbunden
+  - **.eml Drag-and-Drop** — Overlay-Veil beim Ablegen einer Buchungsmail
+  - `desktop.css` — Design-Tokens, Sidebar, Cards, Chips, Avatare, Boarding Pass, Drop Veil, macOS Chrome
+- **`useIsDesktop` Hook** — Resize-aware, erkennt ≥ 1024px und wechselt automatisch zum Desktop-Layout
 
 ---
 
@@ -352,7 +367,9 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ---
 
-[Unreleased]: https://github.com/ieeks/wanderly/compare/v1.5.1...HEAD
+[Unreleased]: https://github.com/ieeks/wanderly/compare/v1.7.0...HEAD
+[1.7.0]: https://github.com/ieeks/wanderly/compare/v1.6.0...v1.7.0
+[1.6.0]: https://github.com/ieeks/wanderly/compare/v1.5.1...v1.6.0
 [1.5.1]: https://github.com/ieeks/wanderly/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/ieeks/wanderly/compare/v1.4.2...v1.5.0
 [1.4.2]: https://github.com/ieeks/wanderly/compare/v1.4.1...v1.4.2

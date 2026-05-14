@@ -113,6 +113,7 @@ family/{familyId}/members/{memberId}
 - [x] ~~Firestore Write Fix — `handleSave` async, `undefined`-Werte in `extras` → `null`~~ ✅ v1.4.2
 - [x] ~~Search / Filter — Trips nach Jahr, Status, Destination~~ ✅ v1.3.0
 - [x] ~~Airport-Suche: 80 → 1178 Flughäfen · Wikidata SPARQL für deutsche Städtenamen~~ ✅ v1.4.1
+- [x] ~~Desktop Version — macOS-Shell (Variant A) · Sidebar · 7 Views · Boarding Pass · .eml Drop~~ ✅ v1.7.0
 - [ ] Boarding Pass Fullscreen — Vollbild für Gate-Vorzeigen, QR-Code, screen.wakeLock (PWA)
 
 ### Dokumente
@@ -733,7 +734,7 @@ Wenn folgendes steht:
 - Add/Edit/Delete Trip vollständig
 - Gmail Sync läuft (zumindest halbautomatisch)
 - Boarding Pass Fullscreen mit QR
-- Desktop Version fertig
+- ~~Desktop Version fertig~~ ✅ v1.7.0
 
 ### Was das Onboarding zeigen soll
 

@@ -2,7 +2,7 @@
 
 > Familien-Reise-Dashboard — Buchungen, Dokumente, Kosten & Teilen auf einen Blick.
 
-**Status:** v1.6.0 · live · Mai 2026 · [ieeks.github.io/wanderly](https://ieeks.github.io/wanderly)
+**Status:** v1.7.0 · live · Mai 2026 · [ieeks.github.io/wanderly](https://ieeks.github.io/wanderly)
 
 ---
 
@@ -27,6 +27,7 @@ Kein Login für Mitlesende, keine monatlichen Abo-Kosten, keine Werbung. Eigene 
 | **Inbox** | Auto-geparste E-Mails mit Unread-Dots, Trip-Tags, Notification Badge |
 | **Familie** | Split & Settle · Ausgaben in Firestore · Auto-Saldo (50/50) · Beglichen-Button · Add / Edit / Delete Reisende · Avatar-Vorschau · 8 Farben |
 | **Ich** | Profil, Gmail-Sync Status, Settings |
+| **Desktop** | macOS-Shell (≥1024px) · Sidebar (7 Views, einklappbar) · Boarding Pass · Countdown- & Budget-Widgets · .eml Drag-and-Drop |
 
 ---
 
@@ -70,14 +71,17 @@ wanderly/
 │   │   ├── ItineraryScreen.jsx
 │   │   ├── InboxScreen.jsx
 │   │   ├── SplitScreen.jsx
-│   │   └── MeScreen.jsx
+│   │   ├── MeScreen.jsx
+│   │   └── DesktopApp.jsx          ← macOS-Shell · Variant A · ≥1024px
 │   ├── data/
 │   │   └── mockData.js             ← Seed-Quelle + Fallback (Firestore ist live)
 │   ├── hooks/
-│   │   └── useFirestore.js         ← useCollection (onSnapshot Realtime)
+│   │   ├── useFirestore.js         ← useCollection (onSnapshot Realtime)
+│   │   └── useSwipeDown.js         ← Swipe-to-close für alle Bottom Sheets
 │   ├── styles/
 │   │   ├── tokens.js               ← Design Tokens
-│   │   └── shared.js               ← gemeinsames S-Style-Objekt
+│   │   ├── shared.js               ← gemeinsames S-Style-Objekt
+│   │   └── desktop.css             ← Desktop Design Tokens + Komponenten-Styles
 │   ├── utils/
 │   │   └── dateHelpers.js
 │   ├── firebase.js
