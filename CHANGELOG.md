@@ -17,6 +17,16 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ---
 
+## [1.5.1] — 2026-05-14
+
+### Added
+- **Link kopieren** — "Link kopieren" Row in ShareSheet kopiert die echte App-URL (`window.location.href`) in die Zwischenablage; inline Feedback: Icon wechselt zu grünem Checkmark, Label zu "Link kopiert!" für 2 Sekunden; Fallback via `execCommand` für ältere Browser
+
+### Changed
+- **ShareSheet URL-Vorschau** — zeigt jetzt die echte URL (`manuel-app.dev/wanderly`) statt Placeholder `wanderly.app/s/x7p2…`
+
+---
+
 ## [1.5.0] — 2026-05-14
 
 ### Added
@@ -325,7 +335,8 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ---
 
-[Unreleased]: https://github.com/ieeks/wanderly/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/ieeks/wanderly/compare/v1.5.1...HEAD
+[1.5.1]: https://github.com/ieeks/wanderly/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/ieeks/wanderly/compare/v1.4.2...v1.5.0
 [1.4.2]: https://github.com/ieeks/wanderly/compare/v1.4.1...v1.4.2
 [1.4.1]: https://github.com/ieeks/wanderly/compare/v1.4.0...v1.4.1
