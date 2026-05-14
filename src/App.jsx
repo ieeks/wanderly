@@ -4,6 +4,7 @@ import { db } from './firebase.js';
 import { useCollection } from './hooks/useFirestore.js';
 import { TRIPS, FAMILY, INBOX } from './data/mockData.js';
 
+import DesktopApp from './screens/DesktopApp.jsx';
 import HomeScreen from './screens/HomeScreen.jsx';
 import TripDetail from './screens/TripDetail.jsx';
 import ItineraryScreen from './screens/ItineraryScreen.jsx';
@@ -20,6 +21,16 @@ import WanderlyLogo from './components/WanderlyLogo.jsx';
 import Toast from './components/Toast.jsx';
 
 import './index.css';
+
+function useIsDesktop() {
+  const [isDesktop, setIsDesktop] = useState(() => window.innerWidth >= 1024);
+  useEffect(() => {
+    const fn = () => setIsDesktop(window.innerWidth >= 1024);
+    window.addEventListener('resize', fn);
+    return () => window.removeEventListener('resize', fn);
+  }, []);
+  return isDesktop;
+}
 
 function TransitionStyles() {
   return (
@@ -47,6 +58,7 @@ function AnimatedScreen({ children, direction }) {
 }
 
 export default function App() {
+  const isDesktop = useIsDesktop();
   const [route, setRoute]             = useState('home');
   const [prevRoute, setPrevRoute]     = useState(null);
   const [tripId, setTripId]           = useState(null);
@@ -168,6 +180,19 @@ export default function App() {
     <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100dvh', background:'#FBF4E6' }}>
       <WanderlyLogo size={60} />
     </div>
+  );
+
+  if (isDesktop) return (
+    <DesktopApp
+      trips={trips}
+      family={family}
+      inboxItems={inboxItems}
+      expenses={expenses}
+      onAddExpense={handleAddExpense}
+      onEditExpense={handleEditExpense}
+      onDeleteExpense={handleDeleteExpense}
+      onSettleAll={handleSettleAll}
+    />
   );
 
   return (
