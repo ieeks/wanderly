@@ -2,7 +2,7 @@
 
 > Familien-Reise-Dashboard — Buchungen, Dokumente, Kosten & Teilen auf einen Blick.
 
-**Status:** v1.5.0 · live · Mai 2026 · [ieeks.github.io/wanderly](https://ieeks.github.io/wanderly)
+**Status:** v1.5.1 · live · Mai 2026 · [ieeks.github.io/wanderly](https://ieeks.github.io/wanderly)
 
 ---
 
