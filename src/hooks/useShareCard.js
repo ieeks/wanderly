@@ -8,9 +8,7 @@ export function useShareCard() {
     if (!cardRef.current) return;
 
     const canvas = await html2canvas(cardRef.current, {
-      width: 1080,
-      height: 1080,
-      scale: 1,
+      scale: 0.7,
       useCORS: true,
       backgroundColor: '#ffffff',
       logging: false,
