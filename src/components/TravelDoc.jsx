@@ -9,7 +9,7 @@ export default function TravelDoc({ trip, family }) {
   if (trip.flight) {
     const f = trip.flight;
     return (
-      <div style={{ ...passBase, background:"linear-gradient(180deg,#F4C9A5,#ECAE84)" }}>
+      <div style={{ ...passBase, background:trip.bg }}>
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"18px 20px 0" }}>
           <div style={{ textAlign:"center" }}>
             <div style={{ fontFamily:"Georgia,serif", fontWeight:700, fontSize:36, letterSpacing:"-0.03em" }}>{f.from}</div>
@@ -56,7 +56,7 @@ export default function TravelDoc({ trip, family }) {
   if (trip.train) {
     const t = trip.train;
     return (
-      <div style={{ ...passBase, background:"linear-gradient(180deg,#D2E2EA,#94B5C2)", boxShadow:"0 14px 36px rgba(67,107,124,0.26)" }}>
+      <div style={{ ...passBase, background:trip.bg }}>
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"18px 20px 0" }}>
           <div style={{ textAlign:"center" }}><div style={{ fontFamily:"Georgia,serif", fontWeight:700, fontSize:22 }}>Wien</div><div style={{ fontSize:9, letterSpacing:"0.1em", textTransform:"uppercase", color:"rgba(45,31,21,0.6)", marginTop:2 }}>Hbf</div></div>
           <div style={{ flex:1, display:"flex", alignItems:"center", padding:"0 12px" }}><div style={{ flex:1, height:1.5, background:"rgba(45,31,21,0.3)" }} /><div style={{ padding:"0 8px" }}><Ic name="Train" size={18} color="rgba(45,31,21,0.6)" /></div><div style={{ flex:1, height:1.5, background:"rgba(45,31,21,0.3)" }} /></div>
@@ -92,7 +92,7 @@ export default function TravelDoc({ trip, family }) {
   if (trip.drive) {
     const d = trip.drive;
     return (
-      <div style={{ ...passBase, background:"linear-gradient(180deg,#EFD8E1,#C9A3B4)", boxShadow:"0 14px 36px rgba(156,99,119,0.26)" }}>
+      <div style={{ ...passBase, background:trip.bg }}>
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"18px 20px 0" }}>
           <div style={{ textAlign:"center" }}><div style={{ fontFamily:"Georgia,serif", fontWeight:700, fontSize:28 }}>{d.from}</div><div style={{ fontSize:9, letterSpacing:"0.1em", textTransform:"uppercase", color:"rgba(45,31,21,0.6)", marginTop:2 }}>start</div></div>
           <div style={{ flex:1, display:"flex", alignItems:"center", padding:"0 12px" }}><div style={{ flex:1, height:1.5, background:"rgba(45,31,21,0.3)" }} /><div style={{ padding:"0 8px" }}><Ic name="Car" size={18} color="rgba(45,31,21,0.6)" /></div><div style={{ flex:1, height:1.5, background:"rgba(45,31,21,0.3)" }} /></div>
