@@ -42,7 +42,7 @@ export default function TripDetail({ tripId, trips, family, onBack, onShare, onI
         <TravelDoc trip={trip} family={family} />
 
         <div style={{ ...S.px, marginTop:16 }}>
-          <div style={{ ...S.card, background:"#F8DEC4" }}>
+          <div style={{ ...S.card, background:trip.bg }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
               <div style={{ display:"flex", alignItems:"center", gap:6 }}><Ic name="Building2" size={12} color="#5A4533" /><span style={{ fontFamily:"monospace", fontSize:9, letterSpacing:"0.08em", textTransform:"uppercase", color:"#5A4533" }}>Hotel · Booking</span></div>
               {trip.due > 0 && <span style={{ ...S.chip, color:"#9C4A28", background:"rgba(196,122,44,0.14)", border:"1px solid rgba(196,122,44,0.25)", fontSize:10 }}><Ic name="Clock" size={10} color="#9C4A28" />{trip.dueDate}</span>}

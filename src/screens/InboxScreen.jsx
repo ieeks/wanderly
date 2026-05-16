@@ -3,13 +3,15 @@ import Ic from '../components/Ic.jsx';
 import TabBar from '../components/TabBar.jsx';
 import { S } from '../styles/shared.js';
 import { TAG_COLOR, TAG_NAME } from '../data/mockData.js';
+import { useSwipeDown } from '../hooks/useSwipeDown.js';
 
 function PasteSheet({ onSubmit, onClose }) {
   const [text, setText] = useState('');
+  const { sheetEl, onTouchStart, onTouchMove, onTouchEnd } = useSwipeDown(onClose);
   return (
     <div style={{ position:'fixed', inset:0, zIndex:100, display:'flex', flexDirection:'column', justifyContent:'flex-end' }}>
       <div style={{ position:'absolute', inset:0, background:'rgba(45,31,21,0.40)', backdropFilter:'blur(4px)' }} onClick={onClose} />
-      <div style={{ position:'relative', background:'#FBF4E6', borderRadius:'22px 22px 0 0', padding:'20px 20px 40px', display:'flex', flexDirection:'column', gap:14 }}>
+      <div ref={sheetEl} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd} style={{ position:'relative', background:'#FBF4E6', borderRadius:'22px 22px 0 0', padding:'20px 20px 40px', display:'flex', flexDirection:'column', gap:14 }}>
         <div style={{ width:36, height:4, borderRadius:2, background:'rgba(45,31,21,0.15)', margin:'0 auto 4px' }} />
         <div>
           <div style={{ fontFamily:'monospace', fontSize:9, letterSpacing:'0.14em', textTransform:'uppercase', color:'#9F8A6F', marginBottom:4 }}>Mail-Text einfügen</div>
