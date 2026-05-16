@@ -2,7 +2,7 @@
 
 > Familien-Reise-Dashboard — Buchungen, Dokumente, Kosten & Teilen auf einen Blick.
 
-**Status:** v1.7.0 · live · Mai 2026 · [ieeks.github.io/wanderly](https://ieeks.github.io/wanderly)
+**Status:** v1.8.0 · live · Mai 2026 · [ieeks.github.io/wanderly](https://ieeks.github.io/wanderly)
 
 ---
 
@@ -24,7 +24,7 @@ Kein Login für Mitlesende, keine monatlichen Abo-Kosten, keine Werbung. Eigene 
 | **Itinerary** | Tag-für-Tag Tagesplan · Add / Edit / Delete Aktivitäten · 14 Kategorien · Auto-Sort nach Uhrzeit |
 | **Dokumente** | PDF-Liste pro Trip mit Status, QR + Download |
 | **Teilen** | Read-only Link, WhatsApp, AirDrop, Preis-Versteck-Toggle · **Share Card als JPEG** (html2canvas) |
-| **Inbox** | Auto-geparste E-Mails mit Unread-Dots, Trip-Tags, Notification Badge |
+| **Inbox** | Auto-geparste E-Mails mit Unread-Dots, Trip-Tags, Notification Badge · **.eml Drop** (Desktop) · **Text einfügen** (Mobile) → Trip automatisch erstellt |
 | **Familie** | Split & Settle · Ausgaben in Firestore · Auto-Saldo (50/50) · Beglichen-Button · Add / Edit / Delete Reisende · Avatar-Vorschau · 8 Farben |
 | **Ich** | Profil, Gmail-Sync Status, Settings |
 | **Desktop** | macOS-Shell (≥1024px) · Sidebar (7 Views, einklappbar) · Boarding Pass · Countdown- & Budget-Widgets · .eml Drag-and-Drop |
@@ -42,7 +42,7 @@ Kein Login für Mitlesende, keine monatlichen Abo-Kosten, keine Werbung. Eigene 
 | Storage | Firebase Storage (PDFs) |
 | Hosting | GitHub Pages (`ieeks.github.io/wanderly`) |
 | CI/CD | GitHub Actions |
-| E-Mail Parser | Python · IMAP · pdfplumber · GPT-4o-mini |
+| E-Mail Parser | Cloudflare Worker · `gpt-4o-mini` · OpenAI Key server-seitig |
 
 ---
 
@@ -83,15 +83,19 @@ wanderly/
 │   │   ├── shared.js               ← gemeinsames S-Style-Objekt
 │   │   └── desktop.css             ← Desktop Design Tokens + Komponenten-Styles
 │   ├── utils/
-│   │   └── dateHelpers.js
+│   │   ├── dateHelpers.js
+│   │   └── parseEmail.js           ← Cloudflare Worker aufrufen + buildTrip()
 │   ├── firebase.js
 │   └── App.jsx                     ← State-Router + Transitions
 ├── scripts/
 │   ├── seed.js                     ← Firestore einmalig befüllen (npm run seed)
 │   ├── generate-airports.js        ← AIRPORTS Array generieren (npm run airports)
 │   └── wikidata-cities.json        ← Wikidata Cache (deutsche Gemeindenamen, nach --refresh-wikidata)
+├── worker/
+│   └── index.js                    ← Cloudflare Worker (OpenAI Proxy)
+├── wrangler.toml                   ← Worker Config (name: wanderly-parser)
 ├── .github/workflows/
-│   └── deploy.yml                  ← GitHub Actions → gh-pages
+│   └── deploy.yml                  ← GitHub Actions → Worker deploy → gh-pages
 ├── firestore.rules
 ├── firebase.json
 ├── .env.local.example
@@ -140,10 +144,11 @@ npm install
 npm run dev
 ```
 
-Firebase Config in `.env.local` (Template: `.env.local.example`):
+Firebase + OpenAI Config in `.env.local` (Template: `.env.local.example`):
 ```
 VITE_FIREBASE_API_KEY=...
 VITE_FIREBASE_APP_ID=...
+VITE_PARSER_URL=https://wanderly-parser.SUBDOMAIN.workers.dev
 ```
 
 ---

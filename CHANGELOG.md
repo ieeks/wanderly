@@ -16,6 +16,24 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ---
 
+## [1.8.0] — 2026-05-16
+
+### Added
+- **E-Mail Parser** — Buchungsbestätigungen automatisch in Trips umwandeln
+  - **Desktop:** `.eml` Drag-and-Drop auf Inbox → ParsedTripModal → Bestätigen öffnet AddTripSheet
+  - **Mobile / iPhone:** „📋 einfügen"-Button → PasteSheet → E-Mail-Text einkopieren → gleicher Flow
+  - **Cloudflare Worker** als serverloser Proxy (`wanderly-parser`) — OpenAI Key liegt server-seitig, nie im JS-Bundle
+  - `gpt-4o-mini` parst Reiseziel, Datum, Flug/Zug/Hotel, Kosten, Versicherung aus beliebigen Buchungsmails
+  - `src/utils/parseEmail.js` ruft Worker per `fetch` auf — kein OpenAI SDK im Frontend mehr
+  - CI deployt Worker automatisch via `npx wrangler deploy` und setzt `OPENAI_API_KEY` als Worker-Secret
+
+### Fixed
+- **Budget-Werte beim Editieren** — `costFlight`/`costHotel`/`costOther` wurden bisher bei jedem Edit neu aus Prozentwerten berechnet statt die gespeicherten Werte zu verwenden
+- **Swipe-to-close** auf PasteSheet (Buchung analysieren) fehlte — `useSwipeDown` Hook nachgerüstet
+- **Karten-Farbe in Trip Detail** — Flug-Ticket, Zug-Ticket und Hotel-Card verwenden jetzt den Trip-Farbindex (`trip.bg`) statt hardcodierter Farben
+
+---
+
 ## [1.7.0] — 2026-05-14
 
 ### Added
