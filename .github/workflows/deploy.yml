@@ -12,12 +12,24 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
 
+      - name: Deploy Cloudflare Worker
+        id: worker
+        run: |
+          npx wrangler deploy
+          echo '${{ secrets.VITE_OPENAI_API_KEY }}' | npx wrangler secret put OPENAI_API_KEY
+          SUBDOMAIN=$(curl -s "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/subdomain" \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" | jq -r '.result.subdomain')
+          echo "url=https://wanderly-parser.${SUBDOMAIN}.workers.dev" >> $GITHUB_OUTPUT
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
       - name: Build frontend
         run: npm ci && npm run build
         env:
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
           VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
-          VITE_OPENAI_API_KEY: ${{ secrets.VITE_OPENAI_API_KEY }}
+          VITE_PARSER_URL: ${{ steps.worker.outputs.url }}
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
