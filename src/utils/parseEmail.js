@@ -1,4 +1,4 @@
-import Anthropic from '@anthropic-ai/sdk';
+import OpenAI from 'openai';
 import { TRIP_COLORS } from '../data/mockData.js';
 import { fmtDate, nightsBetween } from './dateHelpers.js';
 
@@ -40,23 +40,25 @@ Schema (unbekannte Felder als null):
 colorIdx-Mapping: 0=Peach (warm, Strand, Süden), 1=Sage (Natur, Wandern), 2=Sky (Meer, Insel), 3=Plum (Stadt, Kultur), 4=Sand (Wüste, Safari)`;
 
 export async function extractTripFromEmail(emlContent) {
-  const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
   if (!apiKey) {
-    throw new Error('VITE_ANTHROPIC_API_KEY fehlt – bitte in .env.local setzen');
+    throw new Error('VITE_OPENAI_API_KEY fehlt – bitte in .env.local setzen');
   }
 
-  const client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
+  const client = new OpenAI({ apiKey, dangerouslyAllowBrowser: true });
 
-  const msg = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001',
+  const res = await client.chat.completions.create({
+    model: 'gpt-4o-mini',
     max_tokens: 1024,
-    system: SYSTEM,
-    messages: [{ role: 'user', content: emlContent.slice(0, 12000) }],
+    messages: [
+      { role: 'system', content: SYSTEM },
+      { role: 'user', content: emlContent.slice(0, 12000) },
+    ],
   });
 
-  const text = msg.content[0]?.text || '';
+  const text = res.choices[0]?.message?.content || '';
   const match = text.match(/\{[\s\S]+\}/);
-  if (!match) throw new Error('Claude hat kein JSON zurückgegeben');
+  if (!match) throw new Error('Kein JSON in der Antwort');
 
   return buildTrip(JSON.parse(match[0]));
 }
