@@ -1,12 +1,53 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import Ic from '../components/Ic.jsx';
 import TabBar from '../components/TabBar.jsx';
 import { S } from '../styles/shared.js';
 import { TAG_COLOR, TAG_NAME } from '../data/mockData.js';
 
+function PasteSheet({ onSubmit, onClose }) {
+  const [text, setText] = useState('');
+  return (
+    <div style={{ position:'fixed', inset:0, zIndex:100, display:'flex', flexDirection:'column', justifyContent:'flex-end' }}>
+      <div style={{ position:'absolute', inset:0, background:'rgba(45,31,21,0.40)', backdropFilter:'blur(4px)' }} onClick={onClose} />
+      <div style={{ position:'relative', background:'#FBF4E6', borderRadius:'22px 22px 0 0', padding:'20px 20px 40px', display:'flex', flexDirection:'column', gap:14 }}>
+        <div style={{ width:36, height:4, borderRadius:2, background:'rgba(45,31,21,0.15)', margin:'0 auto 4px' }} />
+        <div>
+          <div style={{ fontFamily:'monospace', fontSize:9, letterSpacing:'0.14em', textTransform:'uppercase', color:'#9F8A6F', marginBottom:4 }}>Mail-Text einfügen</div>
+          <div style={{ fontFamily:'Georgia,serif', fontWeight:600, fontSize:22, letterSpacing:'-0.02em' }}>Buchung analysieren</div>
+        </div>
+        <textarea
+          autoFocus
+          value={text}
+          onChange={e => setText(e.target.value)}
+          placeholder={"Betreff: Buchungsbestätigung Ryanair\nVon: noreply@ryanair.com\n\nVielen Dank für Ihre Buchung…"}
+          style={{
+            width:'100%', height:200, padding:'12px 14px', borderRadius:14,
+            border:'1.5px solid #EADFC4', background:'#FFFAF1',
+            fontFamily:'monospace', fontSize:12, color:'#2D1F15',
+            resize:'none', outline:'none', boxSizing:'border-box', lineHeight:1.6,
+          }}
+        />
+        <button
+          onClick={() => text.trim() && onSubmit(text)}
+          disabled={!text.trim()}
+          style={{
+            padding:'14px', borderRadius:14, border:'none', cursor: text.trim() ? 'pointer' : 'default',
+            background: text.trim() ? '#C96F4A' : 'rgba(45,31,21,0.10)',
+            color: text.trim() ? '#fff' : 'rgba(45,31,21,0.35)',
+            fontFamily:'inherit', fontSize:15, fontWeight:700, transition:'background 150ms',
+          }}
+        >
+          ✦ Analysieren
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function InboxScreen({ items, onMarkRead, onTab, onOpenTrip, onEmlFile }) {
   const unread = items.filter(i => !i.read).length;
   const fileRef = useRef(null);
+  const [showPaste, setShowPaste] = useState(false);
 
   function handleFile(e) {
     const file = e.target.files?.[0];
@@ -17,6 +58,11 @@ export default function InboxScreen({ items, onMarkRead, onTab, onOpenTrip, onEm
     reader.readAsText(file);
   }
 
+  function handlePaste(text) {
+    setShowPaste(false);
+    onEmlFile?.('eingefügt.txt', text);
+  }
+
   return (
     <div style={S.screen}>
       <div style={{ ...S.scroll, paddingTop:56, paddingBottom:110 }}>
@@ -24,12 +70,13 @@ export default function InboxScreen({ items, onMarkRead, onTab, onOpenTrip, onEm
           <div style={{ fontFamily:"monospace", fontSize:9, letterSpacing:"0.16em", textTransform:"uppercase", color:"#9F8A6F" }}>Automatisch geparst</div>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", marginTop:2 }}>
             <div style={{ fontFamily:"Georgia,serif", fontWeight:600, fontSize:30, letterSpacing:"-0.02em" }}>Posteingang</div>
-            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:6 }}>
               {unread > 0 && <span style={{ ...S.chip, color:"#9C4A28", background:"rgba(196,122,44,0.14)", border:"1px solid rgba(196,122,44,0.25)", fontSize:10 }}>{unread} neu</span>}
               {onEmlFile && (
                 <>
                   <input ref={fileRef} type="file" accept=".eml,.txt,message/rfc822" style={{ display:'none' }} onChange={handleFile} />
-                  <button onClick={() => fileRef.current?.click()} style={{ background:'none', border:'none', padding:'4px 6px', cursor:'pointer', color:'#C96F4A', fontFamily:'monospace', fontSize:10, fontWeight:700, letterSpacing:'0.08em' }}>📥 .eml</button>
+                  <button onClick={() => fileRef.current?.click()} style={{ background:'none', border:'none', padding:'4px 5px', cursor:'pointer', color:'#C96F4A', fontFamily:'monospace', fontSize:10, fontWeight:700 }}>📥</button>
+                  <button onClick={() => setShowPaste(true)} style={{ background:'none', border:'none', padding:'4px 5px', cursor:'pointer', color:'#C96F4A', fontFamily:'monospace', fontSize:10, fontWeight:700 }}>📋 einfügen</button>
                 </>
               )}
             </div>
@@ -58,6 +105,7 @@ export default function InboxScreen({ items, onMarkRead, onTab, onOpenTrip, onEm
         <div style={{ textAlign:"center", marginTop:14, fontFamily:"monospace", fontSize:9, letterSpacing:"0.12em", textTransform:"uppercase", color:"rgba(45,31,21,0.4)" }}>E-Mails aus Gmail automatisch erkannt</div>
       </div>
       <TabBar active="inbox" onChange={onTab} badges={{}} />
+      {showPaste && <PasteSheet onSubmit={handlePaste} onClose={() => setShowPaste(false)} />}
     </div>
   );
 }
