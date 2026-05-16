@@ -1,4 +1,4 @@
-const { onCall, HttpsError } = require('firebase-functions/v2/https');
+const functions = require('firebase-functions');
 const { OpenAI } = require('openai');
 
 const SYSTEM = `Du bist ein Reisebuchungs-Parser. Extrahiere aus der E-Mail alle Reisedaten und antworte NUR mit gültigem JSON, ohne Markdown-Codeblock.
@@ -38,27 +38,29 @@ Schema (unbekannte Felder als null):
 
 colorIdx-Mapping: 0=Peach (warm, Strand, Süden), 1=Sage (Natur, Wandern), 2=Sky (Meer, Insel), 3=Plum (Stadt, Kultur), 4=Sand (Wüste, Safari)`;
 
-exports.parseBookingEmail = onCall({ region: 'europe-west3' }, async (request) => {
-  const content = request.data?.content;
-  if (!content) throw new HttpsError('invalid-argument', 'Kein Inhalt');
+exports.parseBookingEmail = functions
+  .region('europe-west3')
+  .https.onCall(async (data) => {
+    const content = data?.content;
+    if (!content) throw new functions.https.HttpsError('invalid-argument', 'Kein Inhalt');
 
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) throw new HttpsError('internal', 'API Key nicht konfiguriert');
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) throw new functions.https.HttpsError('internal', 'API Key nicht konfiguriert');
 
-  const client = new OpenAI({ apiKey });
+    const client = new OpenAI({ apiKey });
 
-  const res = await client.chat.completions.create({
-    model: 'gpt-4o-mini',
-    max_tokens: 1024,
-    messages: [
-      { role: 'system', content: SYSTEM },
-      { role: 'user', content: content.slice(0, 12000) },
-    ],
+    const res = await client.chat.completions.create({
+      model: 'gpt-4o-mini',
+      max_tokens: 1024,
+      messages: [
+        { role: 'system', content: SYSTEM },
+        { role: 'user', content: content.slice(0, 12000) },
+      ],
+    });
+
+    const text = res.choices[0]?.message?.content || '';
+    const match = text.match(/\{[\s\S]+\}/);
+    if (!match) throw new functions.https.HttpsError('internal', 'Kein JSON erhalten');
+
+    return JSON.parse(match[0]);
   });
-
-  const text = res.choices[0]?.message?.content || '';
-  const match = text.match(/\{[\s\S]+\}/);
-  if (!match) throw new HttpsError('internal', 'Kein JSON erhalten');
-
-  return JSON.parse(match[0]);
-});
