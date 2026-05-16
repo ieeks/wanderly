@@ -78,10 +78,10 @@ export default function AddTripSheet({ onClose, onAdd, onSave, initialTrip }) {
       hotelCo:      parseTime(t.hotel?.co),
       insurance:    !!(t.extras?.insurance),
       rental:       t.extras?.rental === 'pending',
-      costFlight:   t.flight ? String(Math.round(t.total * 0.35)) : '',
-      costHotel:    t.hotel?.name ? String(Math.round(t.total * 0.55)) : '',
-      costRental:   t.extras?.rental ? String(Math.round(t.total * 0.1)) : '',
-      costOther:    '',
+      costFlight:   t.costFlight != null ? String(t.costFlight) : (t.flight ? String(Math.round(t.total * 0.35)) : ''),
+      costHotel:    t.costHotel  != null ? String(t.costHotel)  : (t.hotel?.name ? String(Math.round(t.total * 0.55)) : ''),
+      costRental:   t.costRental != null ? String(t.costRental) : (t.extras?.rental ? String(Math.round(t.total * 0.1)) : ''),
+      costOther:    t.costOther  != null ? String(t.costOther)  : '',
       paid:         t.paid ? String(t.paid) : '',
     };
   }

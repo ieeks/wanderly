@@ -1,10 +1,22 @@
+import { useRef } from 'react';
 import Ic from '../components/Ic.jsx';
 import TabBar from '../components/TabBar.jsx';
 import { S } from '../styles/shared.js';
 import { TAG_COLOR, TAG_NAME } from '../data/mockData.js';
 
-export default function InboxScreen({ items, onMarkRead, onTab, onOpenTrip }) {
+export default function InboxScreen({ items, onMarkRead, onTab, onOpenTrip, onEmlFile }) {
   const unread = items.filter(i => !i.read).length;
+  const fileRef = useRef(null);
+
+  function handleFile(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+    const reader = new FileReader();
+    reader.onload = ev => onEmlFile?.(file.name, ev.target.result);
+    reader.readAsText(file);
+  }
+
   return (
     <div style={S.screen}>
       <div style={{ ...S.scroll, paddingTop:56, paddingBottom:110 }}>
@@ -12,7 +24,15 @@ export default function InboxScreen({ items, onMarkRead, onTab, onOpenTrip }) {
           <div style={{ fontFamily:"monospace", fontSize:9, letterSpacing:"0.16em", textTransform:"uppercase", color:"#9F8A6F" }}>Automatisch geparst</div>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", marginTop:2 }}>
             <div style={{ fontFamily:"Georgia,serif", fontWeight:600, fontSize:30, letterSpacing:"-0.02em" }}>Posteingang</div>
-            {unread > 0 && <span style={{ ...S.chip, color:"#9C4A28", background:"rgba(196,122,44,0.14)", border:"1px solid rgba(196,122,44,0.25)", fontSize:10 }}>{unread} neu</span>}
+            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+              {unread > 0 && <span style={{ ...S.chip, color:"#9C4A28", background:"rgba(196,122,44,0.14)", border:"1px solid rgba(196,122,44,0.25)", fontSize:10 }}>{unread} neu</span>}
+              {onEmlFile && (
+                <>
+                  <input ref={fileRef} type="file" accept=".eml,.txt,message/rfc822" style={{ display:'none' }} onChange={handleFile} />
+                  <button onClick={() => fileRef.current?.click()} style={{ background:'none', border:'none', padding:'4px 6px', cursor:'pointer', color:'#C96F4A', fontFamily:'monospace', fontSize:10, fontWeight:700, letterSpacing:'0.08em' }}>📥 .eml</button>
+                </>
+              )}
+            </div>
           </div>
         </div>
         <div style={{ background:"#FFFAF1", borderRadius:20, margin:"0 18px", overflow:"hidden", boxShadow:"0 3px 12px rgba(45,31,21,0.06)" }}>

@@ -3,6 +3,7 @@ import { doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { db } from './firebase.js';
 import { useCollection } from './hooks/useFirestore.js';
 import { TRIPS, FAMILY, INBOX } from './data/mockData.js';
+import { extractTripFromEmail } from './utils/parseEmail.js';
 
 import DesktopApp from './screens/DesktopApp.jsx';
 import HomeScreen from './screens/HomeScreen.jsx';
@@ -69,6 +70,7 @@ export default function App() {
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [toast, setToast]             = useState(null);
   const [expenseSheet, setExpenseSheet] = useState(null); // null | 'add' | expense-object
+  const [emlParsing, setEmlParsing]     = useState(false);
 
   const { data: trips,      loading: tripsLoading    } = useCollection('trips',    TRIPS);
   const { data: family,     loading: familyLoading   } = useCollection('family',   FAMILY);
@@ -104,6 +106,20 @@ export default function App() {
 
   async function handleAddTrip(newTrip) {
     await setDoc(doc(db, 'trips', newTrip.id), newTrip);
+  }
+
+  async function handleEmlFile(filename, content) {
+    setEmlParsing(true);
+    try {
+      const parsed = await extractTripFromEmail(content);
+      setEditTrip(parsed);
+      setAddTrip(true);
+    } catch (err) {
+      setToast('Parsing fehlgeschlagen: ' + err.message);
+      setTimeout(() => setToast(null), 4000);
+    } finally {
+      setEmlParsing(false);
+    }
   }
 
   async function handleSaveTrip(updated) {
@@ -188,6 +204,7 @@ export default function App() {
       family={family}
       inboxItems={inboxItems}
       expenses={expenses}
+      onAddTrip={handleAddTrip}
       onAddExpense={handleAddExpense}
       onEditExpense={handleEditExpense}
       onDeleteExpense={handleDeleteExpense}
@@ -211,7 +228,7 @@ export default function App() {
       {route === 'home'      && <AnimatedScreen key="home"      direction={getDir('home')}>      <HomeScreen      trips={trips} onOpenTrip={id => go('detail', id)} onTab={tab} onAddTrip={() => setAddTrip(true)} inboxBadge={unreadCount} /></AnimatedScreen>}
       {route === 'detail'    && <AnimatedScreen key="detail"    direction={getDir('detail')}>    <TripDetail      tripId={tripId} trips={trips} family={family} onBack={() => go('home')} onShare={() => setShare(tripId)} onItinerary={id => go('itinerary', id)} onDocs={() => setDocs(true)} onDelete={t => setDeleteConfirm(t)} onEdit={t => { setEditTrip(t); setAddTrip(true); }} /></AnimatedScreen>}
       {route === 'itinerary' && <AnimatedScreen key="itinerary" direction={getDir('itinerary')}><ItineraryScreen tripId={tripId} trips={trips} onBack={() => go('detail')} onUpdateTrip={updateTripItinerary} /></AnimatedScreen>}
-      {route === 'inbox'     && <AnimatedScreen key="inbox"     direction={getDir('inbox')}>     <InboxScreen     items={inboxItems} onMarkRead={handleMarkRead} onTab={tab} onOpenTrip={id => go('detail', id)} /></AnimatedScreen>}
+      {route === 'inbox'     && <AnimatedScreen key="inbox"     direction={getDir('inbox')}>     <InboxScreen     items={inboxItems} onMarkRead={handleMarkRead} onTab={tab} onOpenTrip={id => go('detail', id)} onEmlFile={handleEmlFile} /></AnimatedScreen>}
       {route === 'split'     && <AnimatedScreen key="split"     direction={getDir('split')}>     <SplitScreen     onTab={tab} inboxBadge={unreadCount} family={family} expenses={expenses} onAddExpense={() => setExpenseSheet('add')} onEditExpense={e => setExpenseSheet(e)} onSettleAll={handleSettleAll} /></AnimatedScreen>}
       {route === 'me'        && <AnimatedScreen key="me"        direction={getDir('me')}>        <MeScreen        onTab={tab} inboxBadge={unreadCount} family={family} onEditPerson={handleEditPerson} /></AnimatedScreen>}
 
@@ -220,7 +237,8 @@ export default function App() {
       {addTrip && <AddTripSheet onClose={() => { setAddTrip(false); setEditTrip(null); }} onAdd={handleAddTrip} onSave={handleSaveTrip} initialTrip={editTrip} />}
       {expenseSheet && <ExpenseSheet expense={expenseSheet === 'add' ? null : expenseSheet} family={family} onSave={expenseSheet === 'add' ? handleAddExpense : handleEditExpense} onDelete={handleDeleteExpense} onClose={() => setExpenseSheet(null)} />}
       {deleteConfirm && <DeleteConfirmSheet trip={deleteConfirm} onCancel={() => setDeleteConfirm(null)} onConfirm={deleteTrip} />}
-      {toast && <Toast msg={toast} />}
+      {emlParsing && <Toast msg="✉️ Buchungsmail wird gelesen…" />}
+      {!emlParsing && toast && <Toast msg={toast} />}
     </div>
   );
 }
