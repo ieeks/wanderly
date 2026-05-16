@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef, createContext, useContext } from 'react';
+import AddTripSheet from '../components/AddTripSheet.jsx';
+import { extractTripFromEmail } from '../utils/parseEmail.js';
 import '../styles/desktop.css';
 
 // ─── Context ─────────────────────────────────────────────────
@@ -46,9 +48,8 @@ function avStyle(f) { return AV_CSS.has(f.bg) ? {} : { background: f.bg || '#F0B
 function fmtEuro(n) { return (n || 0).toLocaleString('de-AT', { minimumFractionDigits:2, maximumFractionDigits:2 }); }
 
 // ─── useEmlDrop ───────────────────────────────────────────────
-function useEmlDrop(ref) {
+function useEmlDrop(ref, onFile) {
   const [over, setOver] = useState(false);
-  const [last, setLast] = useState(null);
   useEffect(() => {
     const el = ref.current; if (!el) return;
     let depth = 0;
@@ -57,25 +58,106 @@ function useEmlDrop(ref) {
     const onLeave = () => { if (--depth <= 0) { depth = 0; setOver(false); } };
     const onDrop  = e => {
       e.preventDefault(); depth = 0; setOver(false);
-      const f = e.dataTransfer?.files?.[0];
-      setLast(f?.name || 'booking.eml');
-      setTimeout(() => setLast(null), 2400);
+      const file = e.dataTransfer?.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => onFile(file.name, ev.target.result);
+      reader.readAsText(file);
     };
     el.addEventListener('dragover', onOver);
     el.addEventListener('dragenter', onEnter);
     el.addEventListener('dragleave', onLeave);
     el.addEventListener('drop', onDrop);
-    return () => { el.removeEventListener('dragover', onOver); el.removeEventListener('dragenter', onEnter); el.removeEventListener('dragleave', onLeave); el.removeEventListener('drop', onDrop); };
-  }, [ref]);
-  return { over, last };
+    return () => {
+      el.removeEventListener('dragover', onOver);
+      el.removeEventListener('dragenter', onEnter);
+      el.removeEventListener('dragleave', onLeave);
+      el.removeEventListener('drop', onDrop);
+    };
+  }, [ref, onFile]);
+  return { over };
 }
 
 // ─── DropVeil ─────────────────────────────────────────────────
-function DropVeil({ on, fileName }) {
+function DropVeil({ on }) {
   return (
     <div className={'drop-veil' + (on ? ' on' : '')}>
-      <div className="pill">
-        {fileName ? <>✓ <span style={{ fontFamily:'var(--mono)', fontSize:16, marginLeft:8 }}>{fileName}</span> erkannt</> : <>📥 .eml hier ablegen — wanderly liest automatisch</>}
+      <div className="pill">📥 .eml hier ablegen — wanderly liest automatisch</div>
+    </div>
+  );
+}
+
+// ─── ParsedTripModal ─────────────────────────────────────────
+function ParsedTripModal({ state, onConfirm, onEdit, onDiscard }) {
+  if (!state) return null;
+  const { parsing, trip, error } = state;
+  return (
+    <div style={{ position:'fixed', inset:0, background:'rgba(45,31,21,0.50)', backdropFilter:'blur(8px)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:200 }}>
+      <div style={{ background:'var(--paper)', borderRadius:22, padding:30, width:500, maxWidth:'calc(100dvw - 48px)', boxShadow:'0 32px 80px rgba(45,31,21,0.30)' }}>
+        {parsing && (
+          <div style={{ textAlign:'center', padding:'36px 0' }}>
+            <div style={{ fontSize:40, marginBottom:14, animation:'float 1.6s ease-in-out infinite' }}>✉️</div>
+            <div className="serif" style={{ fontSize:20, fontWeight:600, marginBottom:6 }}>Buchung wird gelesen…</div>
+            <div className="mono" style={{ fontSize:11, color:'var(--muted)' }}>Claude analysiert die E-Mail</div>
+          </div>
+        )}
+        {error && (
+          <div style={{ textAlign:'center', padding:'28px 0' }}>
+            <div style={{ fontSize:36, marginBottom:12 }}>⚠️</div>
+            <div className="serif" style={{ fontSize:18, fontWeight:600, marginBottom:8 }}>Parsing fehlgeschlagen</div>
+            <div className="mono" style={{ fontSize:11, color:'var(--muted)', marginBottom:20, lineHeight:1.6 }}>{error}</div>
+            <button className="btn ghost" onClick={onDiscard}>Schließen</button>
+          </div>
+        )}
+        {trip && !parsing && !error && (
+          <>
+            <div className="row" style={{ gap:16, marginBottom:22, alignItems:'flex-start' }}>
+              <div style={{ width:56, height:56, borderRadius:16, background:trip.bg, display:'flex', alignItems:'center', justifyContent:'center', fontSize:26, flexShrink:0 }}>{trip.emoji}</div>
+              <div className="grow">
+                <div className="mono" style={{ fontSize:9, color:'var(--terra)', letterSpacing:'0.14em', textTransform:'uppercase', marginBottom:3 }}>Buchung erkannt ✓</div>
+                <div className="display" style={{ fontSize:30, lineHeight:1, letterSpacing:'-0.02em' }}>{trip.name}</div>
+                <div className="mono" style={{ fontSize:11, color:'var(--muted)', marginTop:4 }}>{trip.dates}{trip.short ? ` · ${trip.short}` : ''}</div>
+              </div>
+            </div>
+
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginBottom:22 }}>
+              {trip.flight && (
+                <div className="card" style={{ padding:'12px 14px' }}>
+                  <div className="label" style={{ fontSize:10 }}>✈ Flug</div>
+                  <div style={{ fontSize:15, fontWeight:700, marginTop:4 }}>{trip.flight.from} → {trip.flight.to}</div>
+                  <div className="mono" style={{ fontSize:10, color:'var(--muted)', marginTop:2 }}>{trip.flight.no}{trip.flight.depart ? ` · ${trip.flight.depart}` : ''}</div>
+                </div>
+              )}
+              {trip.train && (
+                <div className="card" style={{ padding:'12px 14px' }}>
+                  <div className="label" style={{ fontSize:10 }}>🚆 Zug</div>
+                  <div style={{ fontSize:15, fontWeight:700, marginTop:4 }}>{trip.train.from} → {trip.train.to}</div>
+                  <div className="mono" style={{ fontSize:10, color:'var(--muted)', marginTop:2 }}>{trip.train.no}{trip.train.depart ? ` · ${trip.train.depart}` : ''}</div>
+                </div>
+              )}
+              {trip.hotel && (
+                <div className="card" style={{ padding:'12px 14px' }}>
+                  <div className="label" style={{ fontSize:10 }}>🏨 Hotel</div>
+                  <div style={{ fontSize:15, fontWeight:700, marginTop:4 }}>{trip.hotel.name}</div>
+                  <div className="mono" style={{ fontSize:10, color:'var(--muted)', marginTop:2 }}>{trip.hotel.loc}</div>
+                </div>
+              )}
+              {trip.total > 0 && (
+                <div className="card" style={{ padding:'12px 14px' }}>
+                  <div className="label" style={{ fontSize:10 }}>💰 Gesamt</div>
+                  <div className="serif" style={{ fontSize:18, fontWeight:600, marginTop:4 }}>€ {trip.total.toLocaleString('de-AT')}</div>
+                  <div className="mono" style={{ fontSize:10, color:'var(--muted)', marginTop:2 }}>{trip.paid > 0 ? `€ ${trip.paid.toLocaleString('de-AT')} bezahlt` : 'noch offen'}</div>
+                </div>
+              )}
+            </div>
+
+            <div className="row" style={{ gap:8 }}>
+              <button className="btn ghost" onClick={onDiscard} style={{ justifyContent:'center', padding:'11px 16px' }}>Verwerfen</button>
+              <button className="btn ghost" onClick={() => onEdit(trip)} style={{ justifyContent:'center', padding:'11px 16px', flex:1 }}>✏ Anpassen</button>
+              <button className="btn terra" onClick={() => onConfirm(trip)} style={{ flex:2, justifyContent:'center', padding:'11px 16px' }}>✓ Reise erstellen</button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -581,8 +663,19 @@ function AllTripsView({ onSelectTrip }) {
 
 // ─── InboxView ────────────────────────────────────────────────
 function InboxView() {
-  const { inboxItems, trips } = useCtx();
+  const { inboxItems, trips, onEmlUpload } = useCtx();
   const [selected, setSelected] = useState(null);
+  const fileRef = useRef(null);
+
+  function handleFileInput(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+    const reader = new FileReader();
+    reader.onload = ev => onEmlUpload?.(file.name, ev.target.result);
+    reader.readAsText(file);
+  }
+
   return (
     <div style={{ padding:'var(--d-pad)' }}>
       <div className="row between" style={{ alignItems:'flex-end', marginBottom:22 }}>
@@ -591,7 +684,10 @@ function InboxView() {
           <div className="display" style={{ fontSize:48, marginTop:4 }}>Eingehende Buchungen</div>
           <div className="mono" style={{ fontSize:12, color:'var(--muted)', marginTop:6 }}>{inboxItems.length} erkannt · {inboxItems.filter(i=>i.read).length} zugeordnet</div>
         </div>
-        <button className="btn terra">📥 .eml hochladen</button>
+        <div className="row" style={{ gap:8 }}>
+          <input ref={fileRef} type="file" accept=".eml,.txt,message/rfc822" style={{ display:'none' }} onChange={handleFileInput} />
+          <button className="btn terra" onClick={() => fileRef.current?.click()}>📥 .eml hochladen</button>
+        </div>
       </div>
       <div style={{ display:'grid', gridTemplateColumns:'1fr 1.2fr', gap:'var(--d-gap)' }}>
         <div className="card" style={{ padding:0 }}>
@@ -616,10 +712,10 @@ function InboxView() {
               </div>
             );
           })}
-          <div style={{ padding:18, margin:14, border:'2px dashed var(--line)', borderRadius:14, textAlign:'center' }}>
+          <div style={{ padding:18, margin:14, border:'2px dashed var(--line)', borderRadius:14, textAlign:'center', cursor:'pointer' }} onClick={() => fileRef.current?.click()}>
             <div style={{ fontSize:28, marginBottom:6 }}>📥</div>
             <div style={{ fontSize:13, fontWeight:600 }}>.eml hierher ziehen</div>
-            <div className="mono" style={{ fontSize:10, color:'var(--muted)', marginTop:4 }}>wanderly liest automatisch</div>
+            <div className="mono" style={{ fontSize:10, color:'var(--muted)', marginTop:4 }}>oder klicken zum Hochladen</div>
           </div>
         </div>
         <div>
@@ -825,12 +921,26 @@ function DocsView() {
 }
 
 // ─── DesktopApp (Variant A shell) ────────────────────────────
-export default function DesktopApp({ trips, family, inboxItems, expenses, onAddExpense, onEditExpense, onDeleteExpense, onSettleAll }) {
-  const [view, setView]     = useState('dashboard');
-  const [tripId, setTripId] = useState(null);
+export default function DesktopApp({ trips, family, inboxItems, expenses, onAddTrip, onAddExpense, onEditExpense, onDeleteExpense, onSettleAll }) {
+  const [view, setView]         = useState('dashboard');
+  const [tripId, setTripId]     = useState(null);
   const [collapsed, setCollapsed] = useState(false);
+  const [parseState, setParseState] = useState(null); // null | { parsing, trip, error }
+  const [editTrip, setEditTrip] = useState(null);     // trip to edit in AddTripSheet
+
   const wrapRef = useRef(null);
-  const { over, last } = useEmlDrop(wrapRef);
+
+  async function handleEmlFile(filename, content) {
+    setParseState({ parsing: true, trip: null, error: null });
+    try {
+      const parsed = await extractTripFromEmail(content);
+      setParseState({ parsing: false, trip: parsed, error: null });
+    } catch (err) {
+      setParseState({ parsing: false, trip: null, error: err.message });
+    }
+  }
+
+  const { over } = useEmlDrop(wrapRef, handleEmlFile);
 
   useEffect(() => {
     if (trips.length > 0 && !tripId) {
@@ -841,6 +951,25 @@ export default function DesktopApp({ trips, family, inboxItems, expenses, onAddE
   const trip = trips.find(t => t.id === tripId) || trips[0];
 
   function selectTrip(id) { setTripId(id); setView('trip'); }
+
+  async function confirmParsedTrip(parsedTrip) {
+    await onAddTrip?.(parsedTrip);
+    setParseState(null);
+    setTripId(parsedTrip.id);
+    setView('trip');
+  }
+
+  function editParsedTrip(parsedTrip) {
+    setParseState(null);
+    setEditTrip(parsedTrip);
+  }
+
+  async function handleSheetSave(updatedTrip) {
+    await onAddTrip?.(updatedTrip);
+    setEditTrip(null);
+    setTripId(updatedTrip.id);
+    setView('trip');
+  }
 
   const breadcrumbs = ({
     dashboard: ['wanderly','Familie 2026','Dashboard'],
@@ -853,7 +982,7 @@ export default function DesktopApp({ trips, family, inboxItems, expenses, onAddE
   })[view] || ['wanderly'];
 
   return (
-    <Ctx.Provider value={{ trips, family, inboxItems, expenses, onAddExpense, onEditExpense, onDeleteExpense, onSettleAll }}>
+    <Ctx.Provider value={{ trips, family, inboxItems, expenses, onAddExpense, onEditExpense, onDeleteExpense, onSettleAll, onEmlUpload: handleEmlFile }}>
       <div className="wd" data-density="comfortable" ref={wrapRef} style={{ width:'100%', height:'100dvh', position:'relative' }}>
         <div className="macwin" style={{ borderRadius:0, height:'100%' }}>
           <Titlebar breadcrumbs={breadcrumbs} />
@@ -880,7 +1009,21 @@ export default function DesktopApp({ trips, family, inboxItems, expenses, onAddE
             </div>
           </div>
         </div>
-        <DropVeil on={over} fileName={last} />
+        <DropVeil on={over} />
+        <ParsedTripModal
+          state={parseState}
+          onConfirm={confirmParsedTrip}
+          onEdit={editParsedTrip}
+          onDiscard={() => setParseState(null)}
+        />
+        {editTrip && (
+          <AddTripSheet
+            initialTrip={editTrip}
+            onClose={() => setEditTrip(null)}
+            onAdd={handleSheetSave}
+            onSave={handleSheetSave}
+          />
+        )}
       </div>
     </Ctx.Provider>
   );

@@ -13,6 +13,7 @@
     "airports:refresh": "node scripts/generate-airports.js --refresh-wikidata --update"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.96.0",
     "firebase": "^12.13.0",
     "html2canvas": "^1.4.1",
     "lucide-react": "^1.14.0",
