@@ -480,6 +480,7 @@ function HotelCard({ trip }) {
 function DashboardView({ trip, onOpenInbox, onSelectTrip }) {
   const { trips, onShare, navigate } = useCtx();
   const others = trips.filter(t => t.id !== trip.id);
+  const [fav, setFav] = useState(false);
   return (
     <div style={{ padding:'var(--d-pad)', position:'relative' }}>
       <div className="row between" style={{ alignItems:'flex-end', marginBottom:22 }}>
@@ -490,7 +491,7 @@ function DashboardView({ trip, onOpenInbox, onSelectTrip }) {
         </div>
         <div className="row" style={{ gap:8 }}>
           <button className="btn ghost" onClick={() => navigate('docs')}>📁 Dokumente</button>
-          <button className="btn ghost">♡</button>
+          <button className="btn ghost" onClick={() => setFav(f => !f)} style={{ color: fav ? '#C96F4A' : undefined }}>{fav ? '♥' : '♡'}</button>
           <button className="btn terra" onClick={() => onShare(trip.id)}>↗ teilen</button>
         </div>
       </div>
@@ -513,7 +514,7 @@ function DashboardView({ trip, onOpenInbox, onSelectTrip }) {
         <div style={{ marginTop:28 }}>
           <div className="row between" style={{ marginBottom:12 }}>
             <span className="label">Weitere Reisen · 2026</span>
-            <span className="mono" style={{ fontSize:11, color:'var(--terra)', fontWeight:600, cursor:'pointer' }}>alle ansehen →</span>
+            <span className="mono" style={{ fontSize:11, color:'var(--terra)', fontWeight:600, cursor:'pointer' }} onClick={() => navigate('trips')}>alle ansehen →</span>
           </div>
           <div style={{ display:'grid', gridTemplateColumns:`repeat(${Math.min(others.length,3)},1fr)`, gap:'var(--d-gap)' }}>
             {others.slice(0,3).map(t => (
