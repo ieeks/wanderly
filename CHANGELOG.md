@@ -16,6 +16,22 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ---
 
+## [1.9.0] — 2026-05-18
+
+### Fixed · Desktop UI
+- **Sidebar Collapse** — Toggle-Button `›` war bei eingeklappter Sidebar (72px) durch zu breites Padding (44px) nicht mehr klickbar; CSS-Fix: Header-Padding auf 0 reduziert, Logo ausgeblendet, Toggle zentriert — Sidebar lässt sich wieder aufklappen
+- **„Neue Reise hinzufügen"** — Karte + Button in der Alle-Reisen-Ansicht hatten kein `onClick`; öffnen jetzt `AddTripSheet`
+- **„↗ teilen"** — Button in Dashboard und Trip-Detail war ohne Handler; öffnet jetzt `ShareSheet` mit allen Optionen (WhatsApp, AirDrop, Link kopieren, Bild teilen)
+- **„📁 Dokumente"** — Button navigiert jetzt korrekt zur Dokumente-Ansicht
+- **„als beglichen markieren"** — Button in Split & Settle war ohne Handler; ruft jetzt `onSettleAll` auf
+- **„alle ansehen →"** — Link im Dashboard-Widget „Weitere Reisen" navigiert jetzt zur Alle-Reisen-Ansicht
+
+### Added · Desktop
+- **Split & Settle Import** — neuer Button „📥 Aus Buchungen importieren" erstellt automatisch Ausgaben-Einträge aus den Reise-Gesamtkosten; doppelte Importe werden übersprungen
+- **Favorit-Toggle** — ♡ / ♥ Button im Dashboard speichert `fav: true/false` persistent in Firestore (Merge-Write); überlebt Neuladen
+
+---
+
 ## [1.8.0] — 2026-05-16
 
 ### Added
@@ -385,7 +401,9 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ---
 
-[Unreleased]: https://github.com/ieeks/wanderly/compare/v1.7.0...HEAD
+[Unreleased]: https://github.com/ieeks/wanderly/compare/v1.9.0...HEAD
+[1.9.0]: https://github.com/ieeks/wanderly/compare/v1.8.0...v1.9.0
+[1.8.0]: https://github.com/ieeks/wanderly/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/ieeks/wanderly/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/ieeks/wanderly/compare/v1.5.1...v1.6.0
 [1.5.1]: https://github.com/ieeks/wanderly/compare/v1.5.0...v1.5.1

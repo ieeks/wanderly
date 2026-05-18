@@ -478,9 +478,8 @@ function HotelCard({ trip }) {
 
 // ─── DashboardView ────────────────────────────────────────────
 function DashboardView({ trip, onOpenInbox, onSelectTrip }) {
-  const { trips, onShare, navigate } = useCtx();
+  const { trips, onShare, navigate, onToggleFav } = useCtx();
   const others = trips.filter(t => t.id !== trip.id);
-  const [fav, setFav] = useState(false);
   return (
     <div style={{ padding:'var(--d-pad)', position:'relative' }}>
       <div className="row between" style={{ alignItems:'flex-end', marginBottom:22 }}>
@@ -491,7 +490,7 @@ function DashboardView({ trip, onOpenInbox, onSelectTrip }) {
         </div>
         <div className="row" style={{ gap:8 }}>
           <button className="btn ghost" onClick={() => navigate('docs')}>📁 Dokumente</button>
-          <button className="btn ghost" onClick={() => setFav(f => !f)} style={{ color: fav ? '#C96F4A' : undefined }}>{fav ? '♥' : '♡'}</button>
+          <button className="btn ghost" onClick={() => onToggleFav?.(trip)} style={{ color: trip.fav ? '#C96F4A' : undefined }}>{trip.fav ? '♥' : '♡'}</button>
           <button className="btn terra" onClick={() => onShare(trip.id)}>↗ teilen</button>
         </div>
       </div>
@@ -941,7 +940,7 @@ function DocsView() {
 }
 
 // ─── DesktopApp (Variant A shell) ────────────────────────────
-export default function DesktopApp({ trips, family, inboxItems, expenses, onAddTrip, onAddExpense, onEditExpense, onDeleteExpense, onSettleAll }) {
+export default function DesktopApp({ trips, family, inboxItems, expenses, onAddTrip, onToggleFav, onAddExpense, onEditExpense, onDeleteExpense, onSettleAll }) {
   const [view, setView]             = useState('dashboard');
   const [tripId, setTripId]         = useState(null);
   const [collapsed, setCollapsed]   = useState(false);
@@ -1018,7 +1017,7 @@ export default function DesktopApp({ trips, family, inboxItems, expenses, onAddT
   })[view] || ['wanderly'];
 
   return (
-    <Ctx.Provider value={{ trips, family, inboxItems, expenses, onAddExpense, onEditExpense, onDeleteExpense, onSettleAll, onEmlUpload: handleEmlFile, onNewTrip: () => setAddTripOpen(true), onShare: setShareId, navigate: setView }}>
+    <Ctx.Provider value={{ trips, family, inboxItems, expenses, onAddExpense, onEditExpense, onDeleteExpense, onSettleAll, onToggleFav, onEmlUpload: handleEmlFile, onNewTrip: () => setAddTripOpen(true), onShare: setShareId, navigate: setView }}>
       <div className="wd" data-density="comfortable" ref={wrapRef} style={{ width:'100%', height:'100dvh', position:'relative' }}>
         <div className="macwin" style={{ borderRadius:0, height:'100%' }}>
           <Titlebar breadcrumbs={breadcrumbs} />
