@@ -114,6 +114,7 @@ family/{familyId}/members/{memberId}
 - [x] ~~Search / Filter — Trips nach Jahr, Status, Destination~~ ✅ v1.3.0
 - [x] ~~Airport-Suche: 80 → 1178 Flughäfen · Wikidata SPARQL für deutsche Städtenamen~~ ✅ v1.4.1
 - [x] ~~Desktop Version — macOS-Shell (Variant A) · Sidebar · 7 Views · Boarding Pass · .eml Drop~~ ✅ v1.7.0
+- [x] ~~Desktop UI — alle Buttons verdrahtet (Neue Reise, Teilen, Dokumente, Beglichen), Sidebar-Collapse-Fix, S&S Import, Favorit-Toggle mit Firestore~~ ✅ v1.9.0
 - [ ] Boarding Pass Fullscreen — Vollbild für Gate-Vorzeigen, QR-Code, screen.wakeLock (PWA)
 
 ### Dokumente
@@ -132,6 +133,7 @@ family/{familyId}/members/{memberId}
 
 ### Finanzen
 - [x] ~~Split & Settle — Ausgaben erfassen, 50/50 Saldo berechnen, "Beglichen" Button~~ ✅ v1.6.0
+- [x] ~~Split & Settle Desktop — Auto-Import aus Buchungskosten, "Beglichen"-Button verdrahtet~~ ✅ v1.9.0
 - [ ] Expense Tracker — Ausgaben während der Reise (trip-spezifisch)
 - [ ] Budget vs. Actual — geplant vs. ausgegeben
 - [ ] Währungsumrechnung — open.er-api.com

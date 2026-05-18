@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, createContext, useContext } from 'react';
 import AddTripSheet from '../components/AddTripSheet.jsx';
+import ShareSheet from '../components/ShareSheet.jsx';
 import { extractTripFromEmail } from '../utils/parseEmail.js';
 import '../styles/desktop.css';
 
@@ -185,13 +186,13 @@ function Sidebar({ activeView, activeTrip, collapsed, onToggleCollapse, onSelect
   ];
   return (
     <div className="sb" data-sidebar={collapsed ? 'collapsed' : 'open'}>
-      <div style={{ padding:'20px 22px 12px', display:'flex', alignItems:'center', gap:10 }}>
-        <div style={{ width:30, height:30, borderRadius:9, background:'linear-gradient(135deg,#C96F4A,#E6B545)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontFamily:'var(--serif)', fontWeight:700, fontSize:16, boxShadow:'0 4px 10px rgba(201,111,74,0.30)', flexShrink:0 }}>w</div>
+      <div className="sb-header" style={{ padding:'20px 22px 12px', display:'flex', alignItems:'center', gap:10 }}>
+        <div className="sb-logo" style={{ width:30, height:30, borderRadius:9, background:'linear-gradient(135deg,#C96F4A,#E6B545)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontFamily:'var(--serif)', fontWeight:700, fontSize:16, boxShadow:'0 4px 10px rgba(201,111,74,0.30)', flexShrink:0 }}>w</div>
         <div className="sb-hide" style={{ minWidth:0 }}>
           <div className="serif" style={{ fontSize:18, fontWeight:600, letterSpacing:'-0.01em' }}>wanderly</div>
           <div className="mono" style={{ fontSize:10, color:'var(--muted)', letterSpacing:'0.12em', textTransform:'uppercase' }}>familie · 2026</div>
         </div>
-        <div style={{ marginLeft:'auto', cursor:'pointer', padding:6, borderRadius:8, color:'var(--muted)' }} onClick={onToggleCollapse}>{collapsed ? '›' : '‹'}</div>
+        <div className="sb-toggle" style={{ marginLeft:'auto', cursor:'pointer', padding:6, borderRadius:8, color:'var(--muted)' }} onClick={onToggleCollapse}>{collapsed ? '›' : '‹'}</div>
       </div>
 
       <div className="sb-h"><span className="sb-h-text">Navigation</span></div>
@@ -477,7 +478,7 @@ function HotelCard({ trip }) {
 
 // ─── DashboardView ────────────────────────────────────────────
 function DashboardView({ trip, onOpenInbox, onSelectTrip }) {
-  const { trips } = useCtx();
+  const { trips, onShare, navigate, onToggleFav } = useCtx();
   const others = trips.filter(t => t.id !== trip.id);
   return (
     <div style={{ padding:'var(--d-pad)', position:'relative' }}>
@@ -488,9 +489,9 @@ function DashboardView({ trip, onOpenInbox, onSelectTrip }) {
           <div className="mono" style={{ fontSize:12, color:'var(--muted)', marginTop:8, letterSpacing:'0.08em' }}>{(trip.route||'').toUpperCase()} · {(trip.dates||'').toUpperCase()} 2026 · {(trip.short||'').toUpperCase()}</div>
         </div>
         <div className="row" style={{ gap:8 }}>
-          <button className="btn ghost">📁 Dokumente</button>
-          <button className="btn ghost">♡</button>
-          <button className="btn terra">↗ teilen</button>
+          <button className="btn ghost" onClick={() => navigate('docs')}>📁 Dokumente</button>
+          <button className="btn ghost" onClick={() => onToggleFav?.(trip)} style={{ color: trip.fav ? '#C96F4A' : undefined }}>{trip.fav ? '♥' : '♡'}</button>
+          <button className="btn terra" onClick={() => onShare(trip.id)}>↗ teilen</button>
         </div>
       </div>
 
@@ -512,7 +513,7 @@ function DashboardView({ trip, onOpenInbox, onSelectTrip }) {
         <div style={{ marginTop:28 }}>
           <div className="row between" style={{ marginBottom:12 }}>
             <span className="label">Weitere Reisen · 2026</span>
-            <span className="mono" style={{ fontSize:11, color:'var(--terra)', fontWeight:600, cursor:'pointer' }}>alle ansehen →</span>
+            <span className="mono" style={{ fontSize:11, color:'var(--terra)', fontWeight:600, cursor:'pointer' }} onClick={() => navigate('trips')}>alle ansehen →</span>
           </div>
           <div style={{ display:'grid', gridTemplateColumns:`repeat(${Math.min(others.length,3)},1fr)`, gap:'var(--d-gap)' }}>
             {others.slice(0,3).map(t => (
@@ -543,7 +544,7 @@ function DashboardView({ trip, onOpenInbox, onSelectTrip }) {
 
 // ─── TripDetailView ───────────────────────────────────────────
 function TripDetailView({ trip, onBack }) {
-  const { family } = useCtx();
+  const { family, onShare, navigate } = useCtx();
   return (
     <div style={{ padding:'var(--d-pad)', position:'relative' }}>
       <div className="row between" style={{ alignItems:'flex-end', marginBottom:22 }}>
@@ -554,9 +555,9 @@ function TripDetailView({ trip, onBack }) {
           <div className="mono" style={{ fontSize:12, color:'var(--muted)', marginTop:8, letterSpacing:'0.08em' }}>{(trip.route||'').toUpperCase()}</div>
         </div>
         <div className="row" style={{ gap:8 }}>
-          <button className="btn ghost">📁 Dokumente</button>
+          <button className="btn ghost" onClick={() => navigate('docs')}>📁 Dokumente</button>
           <button className="btn ghost">📅 Kalender</button>
-          <button className="btn terra">↗ teilen</button>
+          <button className="btn terra" onClick={() => onShare(trip.id)}>↗ teilen</button>
         </div>
       </div>
 
@@ -604,7 +605,7 @@ function TripDetailView({ trip, onBack }) {
 
 // ─── AllTripsView ─────────────────────────────────────────────
 function AllTripsView({ onSelectTrip }) {
-  const { trips } = useCtx();
+  const { trips, onNewTrip } = useCtx();
   const total = trips.reduce((s,t) => s+(t.total||0), 0);
   return (
     <div style={{ padding:'var(--d-pad)' }}>
@@ -616,7 +617,7 @@ function AllTripsView({ onSelectTrip }) {
         </div>
         <div className="row" style={{ gap:8 }}>
           <button className="btn ghost">📅 iCal</button>
-          <button className="btn terra">+ Neue Reise</button>
+          <button className="btn terra" onClick={onNewTrip}>+ Neue Reise</button>
         </div>
       </div>
       <div style={{ display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:'var(--d-gap)' }}>
@@ -650,7 +651,7 @@ function AllTripsView({ onSelectTrip }) {
             </div>
           </div>
         ))}
-        <div className="card" style={{ background:'transparent', border:'2px dashed var(--line)', display:'flex', alignItems:'center', justifyContent:'center', minHeight:280, cursor:'pointer' }}>
+        <div className="card" style={{ background:'transparent', border:'2px dashed var(--line)', display:'flex', alignItems:'center', justifyContent:'center', minHeight:280, cursor:'pointer' }} onClick={onNewTrip}>
           <div style={{ textAlign:'center', color:'var(--muted)' }}>
             <div className="display" style={{ fontSize:32, marginBottom:6 }}>+</div>
             <div className="mono" style={{ fontSize:11, letterSpacing:'0.10em', textTransform:'uppercase' }}>Neue Reise hinzufügen</div>
@@ -743,8 +744,25 @@ function InboxView() {
 const EXPENSE_ICONS = ['✈','🏨','🍽','🚗','🛡','🛍','🎫','•'];
 
 function SplitView() {
-  const { expenses, family } = useCtx();
+  const { expenses, family, onSettleAll, onAddExpense, trips } = useCtx();
   const unsettled = expenses.filter(e => !e.settled);
+
+  async function importFromTrips() {
+    const existingIds = new Set(expenses.map(e => e.id));
+    await Promise.all(
+      trips
+        .filter(t => t.total > 0 && !existingIds.has(`exp_${t.id}_total`))
+        .map(t => onAddExpense?.({
+          id: `exp_${t.id}_total`,
+          desc: `${t.name} – Gesamtbuchung`,
+          amt: t.total,
+          payerId: family[0]?.id || '',
+          catIdx: t.flight || t.train ? 0 : t.hotel ? 1 : 7,
+          date: (t.dates || '').split('–')[0].trim(),
+          settled: false,
+        }))
+    );
+  }
   const n = family.length || 2;
   const bal = {};
   family.forEach(f => { bal[f.id] = 0; });
@@ -761,6 +779,7 @@ function SplitView() {
           <div className="display" style={{ fontSize:48, marginTop:4 }}>Wer schuldet wem?</div>
           <div className="mono" style={{ fontSize:12, color:'var(--muted)', marginTop:6 }}>aus {unsettled.length} geteilten Buchungen</div>
         </div>
+        <button className="btn ghost" onClick={importFromTrips}>📥 Aus Buchungen importieren</button>
       </div>
       <div style={{ display:'grid', gridTemplateColumns:'1.2fr 1fr', gap:'var(--d-gap)', marginBottom:'var(--d-gap)' }}>
         <div className="card tint-peach" style={{ overflow:'hidden', position:'relative' }}>
@@ -778,7 +797,7 @@ function SplitView() {
               </div>
               <div className="row" style={{ gap:10, marginTop:22, position:'relative' }}>
                 <button className="btn terra grow" style={{ justifyContent:'center', padding:12 }}>📤 Anfrage senden</button>
-                <button className="btn ghost grow" style={{ justifyContent:'center', padding:12, background:'rgba(255,255,255,0.55)' }}>als beglichen markieren</button>
+                <button className="btn ghost grow" style={{ justifyContent:'center', padding:12, background:'rgba(255,255,255,0.55)' }} onClick={onSettleAll}>als beglichen markieren</button>
               </div>
             </>
           ) : (
@@ -921,12 +940,15 @@ function DocsView() {
 }
 
 // ─── DesktopApp (Variant A shell) ────────────────────────────
-export default function DesktopApp({ trips, family, inboxItems, expenses, onAddTrip, onAddExpense, onEditExpense, onDeleteExpense, onSettleAll }) {
-  const [view, setView]         = useState('dashboard');
-  const [tripId, setTripId]     = useState(null);
-  const [collapsed, setCollapsed] = useState(false);
-  const [parseState, setParseState] = useState(null); // null | { parsing, trip, error }
-  const [editTrip, setEditTrip] = useState(null);     // trip to edit in AddTripSheet
+export default function DesktopApp({ trips, family, inboxItems, expenses, onAddTrip, onToggleFav, onAddExpense, onEditExpense, onDeleteExpense, onSettleAll }) {
+  const [view, setView]             = useState('dashboard');
+  const [tripId, setTripId]         = useState(null);
+  const [collapsed, setCollapsed]   = useState(false);
+  const [parseState, setParseState] = useState(null);
+  const [editTrip, setEditTrip]     = useState(null);
+  const [addTripOpen, setAddTripOpen] = useState(false);
+  const [shareId, setShareId]       = useState(null);
+  const [desktopToast, setDesktopToast] = useState(null);
 
   const wrapRef = useRef(null);
 
@@ -971,6 +993,19 @@ export default function DesktopApp({ trips, family, inboxItems, expenses, onAddT
     setView('trip');
   }
 
+  async function handleNewTrip(newTrip) {
+    await onAddTrip?.(newTrip);
+    setAddTripOpen(false);
+    setTripId(newTrip.id);
+    setView('trip');
+  }
+
+  function handleSent(who) {
+    setShareId(null);
+    setDesktopToast(`an ${who} geteilt`);
+    setTimeout(() => setDesktopToast(null), 2000);
+  }
+
   const breadcrumbs = ({
     dashboard: ['wanderly','Familie 2026','Dashboard'],
     trips:     ['wanderly','Familie 2026','Alle Reisen'],
@@ -982,7 +1017,7 @@ export default function DesktopApp({ trips, family, inboxItems, expenses, onAddT
   })[view] || ['wanderly'];
 
   return (
-    <Ctx.Provider value={{ trips, family, inboxItems, expenses, onAddExpense, onEditExpense, onDeleteExpense, onSettleAll, onEmlUpload: handleEmlFile }}>
+    <Ctx.Provider value={{ trips, family, inboxItems, expenses, onAddExpense, onEditExpense, onDeleteExpense, onSettleAll, onToggleFav, onEmlUpload: handleEmlFile, onNewTrip: () => setAddTripOpen(true), onShare: setShareId, navigate: setView }}>
       <div className="wd" data-density="comfortable" ref={wrapRef} style={{ width:'100%', height:'100dvh', position:'relative' }}>
         <div className="macwin" style={{ borderRadius:0, height:'100%' }}>
           <Titlebar breadcrumbs={breadcrumbs} />
@@ -1023,6 +1058,26 @@ export default function DesktopApp({ trips, family, inboxItems, expenses, onAddT
             onAdd={handleSheetSave}
             onSave={handleSheetSave}
           />
+        )}
+        {addTripOpen && (
+          <AddTripSheet
+            onClose={() => setAddTripOpen(false)}
+            onAdd={handleNewTrip}
+            onSave={handleNewTrip}
+          />
+        )}
+        {shareId && trips.find(t => t.id === shareId) && (
+          <ShareSheet
+            trip={trips.find(t => t.id === shareId)}
+            family={family}
+            onClose={() => setShareId(null)}
+            onSent={handleSent}
+          />
+        )}
+        {desktopToast && (
+          <div style={{ position:'fixed', bottom:24, left:'50%', transform:'translateX(-50%)', background:'var(--ink)', color:'var(--cream)', padding:'10px 22px', borderRadius:12, fontFamily:'var(--sans)', fontSize:13, fontWeight:600, zIndex:9999, boxShadow:'0 8px 24px rgba(0,0,0,0.3)', whiteSpace:'nowrap' }}>
+            {desktopToast}
+          </div>
         )}
       </div>
     </Ctx.Provider>

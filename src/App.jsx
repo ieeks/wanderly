@@ -108,6 +108,10 @@ export default function App() {
     await setDoc(doc(db, 'trips', newTrip.id), newTrip);
   }
 
+  async function handleToggleFav(trip) {
+    await setDoc(doc(db, 'trips', trip.id), { fav: !trip.fav }, { merge: true });
+  }
+
   async function handleEmlFile(filename, content) {
     setEmlParsing(true);
     try {
@@ -205,6 +209,7 @@ export default function App() {
       inboxItems={inboxItems}
       expenses={expenses}
       onAddTrip={handleAddTrip}
+      onToggleFav={handleToggleFav}
       onAddExpense={handleAddExpense}
       onEditExpense={handleEditExpense}
       onDeleteExpense={handleDeleteExpense}
