@@ -133,6 +133,9 @@ body {
 [data-sidebar="collapsed"] .sb-h { padding: 0 8px; text-align: center; }
 [data-sidebar="collapsed"] .sb-trip { padding: 10px 8px; justify-content: center; }
 [data-sidebar="collapsed"] .sb-trip .sb-trip-meta { display: none; }
+[data-sidebar="collapsed"] .sb-header { padding: 16px 0 12px; justify-content: center; }
+[data-sidebar="collapsed"] .sb-logo   { display: none; }
+[data-sidebar="collapsed"] .sb-toggle { margin-left: 0 !important; }
 
 .sb-item {
   display: flex; align-items: center; gap: 12px;
