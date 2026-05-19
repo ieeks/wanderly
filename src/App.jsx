@@ -80,6 +80,20 @@ export default function App() {
   const loading = tripsLoading || familyLoading || inboxLoading || expensesLoading;
   const unreadCount = inboxItems.filter(i => !i.read).length;
 
+  // One-time migration: set splitShare + defaultPayer on existing family docs
+  useEffect(() => {
+    if (family.length === 0) return;
+    const CHILD_IDS = new Set(['mi', 'al']);
+    const PAYER_ID  = 'ol';
+    family.forEach(f => {
+      if (f.splitShare !== undefined) return;
+      setDoc(doc(db, 'family', f.id), {
+        splitShare: CHILD_IDS.has(f.id) ? 0 : 1,
+        ...(f.id === PAYER_ID && { defaultPayer: true }),
+      }, { merge: true });
+    });
+  }, [family]);
+
   const ROUTE_DEPTH = { home:0, inbox:0, split:0, me:0, detail:1, itinerary:2 };
   const TAB_ORDER   = { home:0, inbox:1, split:2, me:3 };
 
