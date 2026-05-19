@@ -457,6 +457,9 @@ function ExtrasGrid({ trip }) {
 // ─── Hotel card (reused in dashboard + detail) ────────────────
 function HotelCard({ trip }) {
   const tint = getTint(trip);
+  const nights = trip.hotel?.loc?.match(/(\d+)N/)?.[1]
+    || trip.short?.match(/(\d+)\s*Nächte/)?.[1]
+    || null;
   return (
     <div className={`card ${tint}`}>
       <div className="row between">
@@ -467,7 +470,11 @@ function HotelCard({ trip }) {
       <div className="mono" style={{ fontSize:12, color:'rgba(45,31,21,0.65)', marginTop:6 }}>{trip.hotel?.loc || ''}</div>
       <div className="row between" style={{ marginTop:18, alignItems:'flex-end' }}>
         <div><div className="label" style={{ fontSize:10 }}>Check-in</div><div className="serif" style={{ fontWeight:600, fontSize:18, marginTop:2 }}>{trip.hotel?.ci || '—'}</div></div>
-        <div className="mono muted" style={{ fontSize:11 }}>──── Nächte ────</div>
+        <div className="col" style={{ alignItems:'center', gap:3 }}>
+          <div className="mono muted" style={{ fontSize:11 }}>────────</div>
+          <div className="mono" style={{ fontSize:11, fontWeight:600, color:'rgba(45,31,21,0.55)' }}>{nights ? `${nights} Nächte` : 'Nächte'}</div>
+          <div className="mono muted" style={{ fontSize:11 }}>────────</div>
+        </div>
         <div style={{ textAlign:'right' }}><div className="label" style={{ fontSize:10 }}>Check-out</div><div className="serif" style={{ fontWeight:600, fontSize:18, marginTop:2 }}>{trip.hotel?.co || '—'}</div></div>
       </div>
     </div>
