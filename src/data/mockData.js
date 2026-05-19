@@ -47,10 +47,10 @@ export const TRIPS = [
 ];
 
 export const FAMILY = [
-  { id:"mn", name:"Manuel",    init:"M",  bg:"#F0B58A", fg:"#2D1F15", seat1:"14F", seat2:"19E", extra:"Koffer 20kg" },
-  { id:"ol", name:"Olga",      init:"O",  bg:"#8AA074", fg:"#1f2a17", seat1:"15F", seat2:"20E", extra:null },
-  { id:"mi", name:"Michael",   init:"Mi", bg:"#7BA8B8", fg:"#143037", seat1:"14E", seat2:"19F", extra:null },
-  { id:"al", name:"Alexander", init:"A",  bg:"#9C6377", fg:"#fff",    seat1:"15E", seat2:"20F", extra:null },
+  { id:"mn", name:"Manuel",    init:"M",  bg:"#F0B58A", fg:"#2D1F15", seat1:"14F", seat2:"19E", extra:"Koffer 20kg", splitShare:1 },
+  { id:"ol", name:"Olga",      init:"O",  bg:"#8AA074", fg:"#1f2a17", seat1:"15F", seat2:"20E", extra:null,          splitShare:1, defaultPayer:true },
+  { id:"mi", name:"Michael",   init:"Mi", bg:"#7BA8B8", fg:"#143037", seat1:"14E", seat2:"19F", extra:null,          splitShare:0 },
+  { id:"al", name:"Alexander", init:"A",  bg:"#9C6377", fg:"#fff",    seat1:"15E", seat2:"20F", extra:null,          splitShare:0 },
 ];
 
 export const INBOX = [

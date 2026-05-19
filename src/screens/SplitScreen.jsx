@@ -1,6 +1,7 @@
 import Ic from '../components/Ic.jsx';
 import TabBar from '../components/TabBar.jsx';
 import { S } from '../styles/shared.js';
+import { calcBalances, findCreditorDebtor } from '../utils/splitCalc.js';
 
 const CATEGORIES = [
   { icon:"Plane",           bg:"#F8DEC4" },
@@ -21,35 +22,8 @@ export default function SplitScreen({ onTab, inboxBadge = 0, family = [], expens
   const unsettled = expenses.filter(e => !e.settled);
   const settled   = expenses.filter(e =>  e.settled);
 
-  // Saldo: per payer, collect 50% of what they paid that others owe
-  // Always 50/50: each expense is split equally among all family members
-  const memberCount = family.length || 2;
-  const share = 1 / memberCount;
-
-  // Net: what does each person owe others?
-  // For each expense, payer fronted the full amount.
-  // Everyone else owes payer their share.
-  // Simplified to the two-person case shown in UI: find who owes whom and how much.
-  const balances = {};
-  family.forEach(f => { balances[f.id] = 0; });
-  unsettled.forEach(e => {
-    const each = e.amt * share;
-    family.forEach(f => {
-      if (f.id === e.payerId) {
-        balances[f.id] = (balances[f.id] || 0) + e.amt - each; // payer gets credit
-      } else {
-        balances[f.id] = (balances[f.id] || 0) - each;          // others owe
-      }
-    });
-  });
-
-  // Find the biggest creditor and biggest debtor for the hero card
-  let maxCreditor = null, maxDebtor = null;
-  family.forEach(f => {
-    const b = balances[f.id] || 0;
-    if (b > 0 && (!maxCreditor || b > (balances[maxCreditor.id] || 0))) maxCreditor = f;
-    if (b < 0 && (!maxDebtor  || b < (balances[maxDebtor.id]  || 0))) maxDebtor  = f;
-  });
+  const balances = calcBalances(family, unsettled);
+  const { creditor: maxCreditor, debtor: maxDebtor } = findCreditorDebtor(family, balances);
   const saldo = maxCreditor ? Math.abs(balances[maxCreditor.id] || 0) : 0;
 
   const totalUnsettled = unsettled.reduce((s, e) => s + e.amt, 0);

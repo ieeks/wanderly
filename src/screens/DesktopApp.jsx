@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef, createContext, useContext } from 'react';
+import { LayoutDashboard, Briefcase, Inbox, Users, ArrowLeftRight, FolderOpen } from 'lucide-react';
 import AddTripSheet from '../components/AddTripSheet.jsx';
 import ShareSheet from '../components/ShareSheet.jsx';
 import { extractTripFromEmail } from '../utils/parseEmail.js';
+import { calcBalances, findCreditorDebtor, defaultPayer } from '../utils/splitCalc.js';
 import '../styles/desktop.css';
 
 // ─── Context ─────────────────────────────────────────────────
@@ -177,12 +179,12 @@ function Av({ f, size = 28, fontSize = 13, style: extra = {} }) {
 function Sidebar({ activeView, activeTrip, collapsed, onToggleCollapse, onSelectView, onSelectTrip }) {
   const { trips, family } = useCtx();
   const NAV = [
-    { id:'dashboard', l:'Dashboard',     ic:'◐' },
-    { id:'trips',     l:'Alle Reisen',   ic:'🧳' },
-    { id:'inbox',     l:'Inbox',         ic:'📥', badge:3 },
-    { id:'family',    l:'Familie',       ic:'👨‍👩‍👦' },
-    { id:'split',     l:'Split & Settle',ic:'⇄' },
-    { id:'docs',      l:'Dokumente',     ic:'📁' },
+    { id:'dashboard', l:'Dashboard',     Icon: LayoutDashboard },
+    { id:'trips',     l:'Alle Reisen',   Icon: Briefcase },
+    { id:'inbox',     l:'Inbox',         Icon: Inbox, badge:3 },
+    { id:'family',    l:'Familie',       Icon: Users },
+    { id:'split',     l:'Split & Settle',Icon: ArrowLeftRight },
+    { id:'docs',      l:'Dokumente',     Icon: FolderOpen },
   ];
   return (
     <div className="sb" data-sidebar={collapsed ? 'collapsed' : 'open'}>
@@ -199,7 +201,7 @@ function Sidebar({ activeView, activeTrip, collapsed, onToggleCollapse, onSelect
       <div className="col" style={{ gap:2 }}>
         {NAV.map(n => (
           <div key={n.id} className={'sb-item' + (activeView === n.id ? ' active' : '')} onClick={() => onSelectView(n.id)}>
-            <span className="dot">{n.ic}</span>
+            <span className="dot"><n.Icon size={16} strokeWidth={1.8} /></span>
             <span className="sb-label grow">{n.l}</span>
             {n.badge && <span className="chip sb-label" style={{ padding:'1px 7px', fontSize:10 }}>{n.badge}</span>}
           </div>
@@ -384,12 +386,8 @@ function BudgetCard({ trip }) {
 function SplitMiniCard() {
   const { expenses, family } = useCtx();
   const unsettled = expenses.filter(e => !e.settled);
-  const n = family.length || 2;
-  const bal = {};
-  family.forEach(f => { bal[f.id] = 0; });
-  unsettled.forEach(e => { const ea = e.amt/n; family.forEach(f => { bal[f.id] += f.id === e.payerId ? e.amt-ea : -ea; }); });
-  let creditor = null, debtor = null;
-  family.forEach(f => { const b = bal[f.id]||0; if (b>0 && (!creditor||b>bal[creditor.id])) creditor=f; if (b<0 && (!debtor||b<bal[debtor.id])) debtor=f; });
+  const bal = calcBalances(family, unsettled);
+  const { creditor, debtor } = findCreditorDebtor(family, bal);
   const saldo = creditor ? Math.abs(bal[creditor.id]) : 0;
   return (
     <div className="card tint-sand">
@@ -749,6 +747,7 @@ function SplitView() {
 
   async function importFromTrips() {
     const existingIds = new Set(expenses.map(e => e.id));
+    const payer = defaultPayer(family);
     await Promise.all(
       trips
         .filter(t => t.total > 0 && !existingIds.has(`exp_${t.id}_total`))
@@ -756,20 +755,17 @@ function SplitView() {
           id: `exp_${t.id}_total`,
           desc: `${t.name} – Gesamtbuchung`,
           amt: t.total,
-          payerId: family[0]?.id || '',
+          payerId: payer?.id || '',
           catIdx: t.flight || t.train ? 0 : t.hotel ? 1 : 7,
           date: (t.dates || '').split('–')[0].trim(),
           settled: false,
         }))
     );
   }
-  const n = family.length || 2;
-  const bal = {};
-  family.forEach(f => { bal[f.id] = 0; });
-  unsettled.forEach(e => { const ea = e.amt/n; family.forEach(f => { bal[f.id] += f.id===e.payerId ? e.amt-ea : -ea; }); });
-  let creditor = null, debtor = null;
-  family.forEach(f => { const b=bal[f.id]||0; if(b>0&&(!creditor||b>bal[creditor.id]))creditor=f; if(b<0&&(!debtor||b<bal[debtor.id]))debtor=f; });
+  const bal = calcBalances(family, unsettled);
+  const { creditor, debtor } = findCreditorDebtor(family, bal);
   const saldo = creditor ? Math.abs(bal[creditor.id]) : 0;
+  const adults = family.filter(f => (f.splitShare ?? 1) > 0);
 
   return (
     <div style={{ padding:'var(--d-pad)' }}>
@@ -777,7 +773,7 @@ function SplitView() {
         <div>
           <div className="eyebrow">Split & Settle · Familie 2026</div>
           <div className="display" style={{ fontSize:48, marginTop:4 }}>Wer schuldet wem?</div>
-          <div className="mono" style={{ fontSize:12, color:'var(--muted)', marginTop:6 }}>aus {unsettled.length} geteilten Buchungen</div>
+          <div className="mono" style={{ fontSize:12, color:'var(--muted)', marginTop:6 }}>aus {unsettled.length} geteilten Buchungen · {adults.map(f => f.name).join(' & ')} je 50 %</div>
         </div>
         <button className="btn ghost" onClick={importFromTrips}>📥 Aus Buchungen importieren</button>
       </div>
@@ -809,10 +805,10 @@ function SplitView() {
         </div>
         <div className="card">
           <div className="label" style={{ marginBottom:14 }}>Pro Person</div>
-          {family.map((f,i) => {
+          {adults.map((f,i) => {
             const b = bal[f.id]||0;
             return (
-              <div key={f.id} className="row" style={{ padding:'12px 0', gap:14, borderBottom:i<family.length-1?'0.5px solid var(--line-2)':'none' }}>
+              <div key={f.id} className="row" style={{ padding:'12px 0', gap:14, borderBottom:i<adults.length-1?'0.5px solid var(--line-2)':'none' }}>
                 <Av f={f} />
                 <div className="grow"><div style={{ fontSize:13, fontWeight:600 }}>{f.name}</div></div>
                 <div style={{ textAlign:'right' }}>
@@ -845,7 +841,7 @@ function SplitView() {
                   <div style={{ width:100, fontFamily:'var(--mono)', fontSize:11, color:'var(--muted)' }}>{e.date}</div>
                   <div style={{ width:100, fontFamily:'var(--mono)', fontSize:11, color:'var(--ink-2)' }}>50 / 50</div>
                   <div className="serif" style={{ width:110, textAlign:'right' }}>€ {fmtEuro(e.amt)}</div>
-                  <div className="mono muted" style={{ width:110, textAlign:'right' }}>€ {fmtEuro(e.amt/n)}</div>
+                  <div className="mono muted" style={{ width:110, textAlign:'right' }}>€ {fmtEuro(e.amt/adults.length)}</div>
                 </div>
               );
             })}
