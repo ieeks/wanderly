@@ -117,11 +117,16 @@ family/{familyId}/members/{memberId}
 - [x] ~~Desktop UI — alle Buttons verdrahtet (Neue Reise, Teilen, Dokumente, Beglichen), Sidebar-Collapse-Fix, S&S Import, Favorit-Toggle mit Firestore~~ ✅ v1.9.0
 - [ ] Boarding Pass Fullscreen — Vollbild für Gate-Vorzeigen, QR-Code, screen.wakeLock (PWA)
 
+### Intelligence · Auto-Import (✅ v2.0.0)
+- [x] ~~Gmail Sync — IMAP → GPT-4o-mini → Firestore inbox · GitHub Actions Cron · Deduplication via Message-ID~~ ✅ v2.0.0
+- [x] ~~Inbox → Trip Import — geparste Mail → AddTripSheet prefill · Inbox-Mail nach Save getaggt~~ ✅ v2.0.0
+- [x] ~~Merge Detection — gleiches Reiseziel + neuer Buchungstyp → MergeSheet/MergeModal → kombinierter Trip~~ ✅ v2.0.0
+
 ### Dokumente
 - [ ] PDF Viewer — in-app öffnen
 - [ ] Upload Flow — Foto / Datei zu Trip
 - [ ] Auto-Kategorisierung — Flugticket vs. Hotel vs. Versicherung
-- [ ] Gmail Sync — Label `Reisen` → IMAP → GPT-4o-mini → Firestore
+- [x] ~~Gmail Sync — IMAP → GPT-4o-mini → Firestore~~ ✅ v2.0.0
 
 ### Familie & Sharing
 - [x] ~~Share Card als Bild — JPEG via html2canvas · iOS Share Sheet~~ ✅ v1.5.0
@@ -734,7 +739,7 @@ Gmail Sync (Phase 3) kommt danach als separater Handoff — eigenes Prompt-File.
 ### Wann ist "Ende"?
 Wenn folgendes steht:
 - Add/Edit/Delete Trip vollständig
-- Gmail Sync läuft (zumindest halbautomatisch)
+- ~~Gmail Sync läuft (zumindest halbautomatisch)~~ ✅ v2.0.0
 - Boarding Pass Fullscreen mit QR
 - ~~Desktop Version fertig~~ ✅ v1.7.0
 

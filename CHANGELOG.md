@@ -8,11 +8,39 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ## [Unreleased]
 
-### Planned · v1 App · nächste Schritte
+### Planned · nächste Schritte
 - PDF Viewer — in-app PDF öffnen
 - WhatsApp Deep Link (echte wa.me URL)
 - Boarding Pass Fullscreen — Vollbild für Gate · QR · screen.wakeLock
-- Gmail Sync: Label `Reisen` → IMAP → GPT-4o-mini → Firestore
+
+---
+
+## [2.0.0] — 2026-05-19
+
+### Added · Gmail Sync (IMAP → GPT-4o-mini → Firestore)
+- **`scripts/gmail_sync.py`** — GitHub Actions Cron (stündlich): IMAP-Fetch ungelesener Mails aus `manuel.reisen1@gmail.com` (oder Label `GMAIL_LABEL`), Klartext-Extraktion über MIME-Walker, GPT-4o-mini Parsing, Firestore-Write in `inbox/{doc_id}`
+- **`scripts/requirements_sync.txt`** — Python-Abhängigkeiten: `firebase-admin==6.5.0`, `openai>=1.52.0`
+- **`.github/workflows/gmail_sync.yml`** — Cron-Job (jede Stunde) + manueller Trigger; Secrets: `GMAIL_ADDRESS`, `GMAIL_APP_PASSWORD`, `FIREBASE_SERVICE_ACCOUNT`, `OPENAI_API_KEY`
+- **Deduplication** via MD5 aus Message-ID-Header — kein doppelter Import bei Wiederholung
+- **GPT System Prompt** — extrahiert `type` (flight/hotel/train/car/insurance/other), `destination`, `departureDate`, `returnDate`, `checkIn`, `checkOut`, `totalAmount`, `bookingRef`, `flightNr`, `hotelName`, `nights`, `passengers`; alle User-facing Strings auf Deutsch
+
+### Added · Inbox → Trip Import
+- **`src/utils/inboxToTrip.js`** — Wandelt `item.parsed` GPT-JSON in prefilled Trip-Objekt um; Typen: flight, hotel, train, fallback; Datum-Utilities: `parseIso`, `dateRange`, `fmtFlight`, `fmtHotel`
+- **`_dateFrom` / `_dateTo` Felder** — ISO-Datum direkt am Trip-Objekt; `buildInitialForm` in AddTripSheet bevorzugt diese ggü. Display-String-Parsing
+- **Inbox-Chip „Als Reise anlegen"** — orange Chip auf ungekoppelten geparsten Mails
+- **`onImportBooking` Handler** — nach Speichern wird die Inbox-Mail mit `tag: tripId` verknüpft und als gelesen markiert
+- **Desktop InboxView Detail-Panel** — zeigt Destination, Datum, Flugnr., Hotel, Buchungs-Nr., Betrag + „+ Als neue Reise anlegen"-Button
+
+### Added · Merge Detection
+- **`findMergeCandidate(trips, inboxItem)`** — erkennt bestehende Reisen mit gleichem Reiseziel, die den neuen Buchungstyp noch nicht haben (z.B. Flug-Trip ohne Hotel)
+- **`mergeIntoTrip(existingTrip, inboxItem)`** — fügt hotel/flight/train aus neuer Buchung in bestehenden Trip ein; aktualisiert `total`, `due`, `_dateFrom`/`_dateTo`
+- **`MergeSheet` (Mobile)** — Bottom Sheet: zeigt bestehende Reise + neue Buchung nebeneinander; Buttons „Zusammenführen" und „Als neue Reise anlegen"
+- **`MergeModal` (Desktop)** — zentriertes Modal mit gleichem Flow
+- Merge öffnet AddTripSheet mit vorausgefüllten kombinierten Daten; Speichern überschreibt die bestehende Reise (gleiche ID)
+
+### Fixed · AddTripSheet Prefill
+- **Leeres Sheet trotz Prefill-Daten** — `handleImportBooking` setzte fälschlicherweise `addTripOpen = true` zusätzlich zu `editTrip`; das leere Sheet (ohne `initialTrip`) renderte on top und verdeckte das vorbefüllte → `setAddTripOpen(true)` entfernt
+- **Datum-Parsing schlägt fehl** — `parseDateToISO("23")` kann `"23–27 Dez"` nicht parsen (kein Monatsname im ersten Segment); AddTripSheet nutzt jetzt `_dateFrom`/`_dateTo` ISO-Strings direkt wenn vorhanden
 
 ---
 
@@ -401,7 +429,8 @@ Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ---
 
-[Unreleased]: https://github.com/ieeks/wanderly/compare/v1.9.0...HEAD
+[Unreleased]: https://github.com/ieeks/wanderly/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/ieeks/wanderly/compare/v1.9.0...v2.0.0
 [1.9.0]: https://github.com/ieeks/wanderly/compare/v1.8.0...v1.9.0
 [1.8.0]: https://github.com/ieeks/wanderly/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/ieeks/wanderly/compare/v1.6.0...v1.7.0
