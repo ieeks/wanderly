@@ -22,7 +22,9 @@ from openai import OpenAI
 
 GMAIL_ADDRESS     = os.environ['GMAIL_ADDRESS']
 GMAIL_APP_PASSWORD = os.environ['GMAIL_APP_PASSWORD']
-GMAIL_LABEL       = os.environ.get('GMAIL_LABEL', 'Reisen')
+# If GMAIL_LABEL is empty or unset, read entire INBOX (ideal for a dedicated address).
+# Set GMAIL_LABEL=Reisen to filter by label on a shared mailbox instead.
+GMAIL_LABEL       = os.environ.get('GMAIL_LABEL', '')
 OPENAI_API_KEY    = os.environ['OPENAI_API_KEY']
 
 _sa_raw = os.environ['FIREBASE_SERVICE_ACCOUNT']
@@ -144,15 +146,15 @@ def format_date(date_header):
 # ---------------------------------------------------------------------------
 
 def main():
-    print(f"[wanderly] Connecting to Gmail ({GMAIL_ADDRESS}) label={GMAIL_LABEL}")
+    folder = f'"{GMAIL_LABEL}"' if GMAIL_LABEL else 'INBOX'
+    print(f"[wanderly] Connecting to Gmail ({GMAIL_ADDRESS}) folder={folder}")
 
     mail = imaplib.IMAP4_SSL('imap.gmail.com')
     mail.login(GMAIL_ADDRESS, GMAIL_APP_PASSWORD)
 
-    # Gmail labels use special IMAP folder syntax
-    status, _ = mail.select(f'"{GMAIL_LABEL}"')
+    status, _ = mail.select(folder)
     if status != 'OK':
-        print(f"[wanderly] ERROR: label '{GMAIL_LABEL}' not found. Exiting.")
+        print(f"[wanderly] ERROR: folder '{folder}' not found. Exiting.")
         mail.logout()
         sys.exit(1)
 
