@@ -18,7 +18,7 @@ function fmt(n) {
   return n.toLocaleString('de-AT', { minimumFractionDigits:2, maximumFractionDigits:2 });
 }
 
-export default function SplitScreen({ onTab, inboxBadge = 0, family = [], expenses = [], onAddExpense, onEditExpense, onSettleAll }) {
+export default function SplitScreen({ onTab, inboxBadge = 0, family = [], expenses = [], onAddExpense, onEditExpense, onSettleAll, onUnsettleAll }) {
   const unsettled = expenses.filter(e => !e.settled);
   const settled   = expenses.filter(e =>  e.settled);
 
@@ -50,6 +50,9 @@ export default function SplitScreen({ onTab, inboxBadge = 0, family = [], expens
                 <div style={{ fontFamily:"monospace", fontSize:9, textTransform:"uppercase", letterSpacing:"0.1em", color:"rgba(45,31,21,0.6)" }}>Alles beglichen</div>
                 <div style={{ fontFamily:"Georgia,serif", fontSize:44, fontWeight:600, marginTop:4 }}>€ 0,00</div>
                 <div style={{ fontFamily:"monospace", fontSize:10, color:"rgba(45,31,21,0.6)", marginTop:3 }}>Keine offenen Ausgaben</div>
+                {settled.length > 0 && (
+                  <button onClick={onUnsettleAll} style={{ ...S.btn, marginTop:14, padding:"9px 14px", fontSize:12, background:"rgba(255,255,255,0.5)", color:"#2D1F15" }}>↩ Zurücksetzen</button>
+                )}
               </>
             ) : (
               <>

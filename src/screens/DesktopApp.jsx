@@ -742,7 +742,7 @@ function InboxView() {
 const EXPENSE_ICONS = ['✈','🏨','🍽','🚗','🛡','🛍','🎫','•'];
 
 function SplitView() {
-  const { expenses, family, onSettleAll, onAddExpense, trips } = useCtx();
+  const { expenses, family, onSettleAll, onUnsettleAll, onEditExpense, onAddExpense, trips } = useCtx();
   const unsettled = expenses.filter(e => !e.settled);
 
   async function importFromTrips() {
@@ -800,6 +800,9 @@ function SplitView() {
             <div style={{ textAlign:'center', padding:'24px 0' }}>
               <div className="display" style={{ fontSize:48, color:'var(--sage-d)' }}>✓</div>
               <div style={{ fontWeight:600, marginTop:8 }}>Alles ausgeglichen</div>
+              {expenses.some(e => e.settled) && (
+                <button className="btn ghost" style={{ marginTop:16, fontSize:12 }} onClick={onUnsettleAll}>↩ Zurücksetzen</button>
+              )}
             </div>
           )}
         </div>
@@ -832,7 +835,9 @@ function SplitView() {
             {expenses.map((e,i) => {
               const payer = family.find(f => f.id===e.payerId)||family[0];
               return (
-                <div key={e.id} className="row" style={{ padding:'14px var(--d-pad)', borderBottom:i<expenses.length-1?'0.5px solid var(--line-2)':'none', opacity:e.settled?0.5:1 }}
+                <div key={e.id} className="row" style={{ padding:'14px var(--d-pad)', borderBottom:i<expenses.length-1?'0.5px solid var(--line-2)':'none', opacity:e.settled?0.45:1, cursor:e.settled?'pointer':'default' }}
+                     title={e.settled ? 'Klicken zum Wiedereröffnen' : ''}
+                     onClick={e.settled ? () => onEditExpense?.({...e, settled:false}) : undefined}
                      onMouseEnter={el => el.currentTarget.style.background='rgba(255,255,255,0.45)'}
                      onMouseLeave={el => el.currentTarget.style.background='transparent'}>
                   <div style={{ width:40, fontSize:18 }}>{EXPENSE_ICONS[e.catIdx]||'•'}</div>
@@ -936,7 +941,7 @@ function DocsView() {
 }
 
 // ─── DesktopApp (Variant A shell) ────────────────────────────
-export default function DesktopApp({ trips, family, inboxItems, expenses, onAddTrip, onToggleFav, onAddExpense, onEditExpense, onDeleteExpense, onSettleAll }) {
+export default function DesktopApp({ trips, family, inboxItems, expenses, onAddTrip, onToggleFav, onAddExpense, onEditExpense, onDeleteExpense, onSettleAll, onUnsettleAll }) {
   const [view, setView]             = useState('dashboard');
   const [tripId, setTripId]         = useState(null);
   const [collapsed, setCollapsed]   = useState(false);
@@ -1013,7 +1018,7 @@ export default function DesktopApp({ trips, family, inboxItems, expenses, onAddT
   })[view] || ['wanderly'];
 
   return (
-    <Ctx.Provider value={{ trips, family, inboxItems, expenses, onAddExpense, onEditExpense, onDeleteExpense, onSettleAll, onToggleFav, onEmlUpload: handleEmlFile, onNewTrip: () => setAddTripOpen(true), onShare: setShareId, navigate: setView }}>
+    <Ctx.Provider value={{ trips, family, inboxItems, expenses, onAddExpense, onEditExpense, onDeleteExpense, onSettleAll, onUnsettleAll, onToggleFav, onEmlUpload: handleEmlFile, onNewTrip: () => setAddTripOpen(true), onShare: setShareId, navigate: setView }}>
       <div className="wd" data-density="comfortable" ref={wrapRef} style={{ width:'100%', height:'100dvh', position:'relative' }}>
         <div className="macwin" style={{ borderRadius:0, height:'100%' }}>
           <Titlebar breadcrumbs={breadcrumbs} />
