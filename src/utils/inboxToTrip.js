@@ -90,7 +90,7 @@ export function inboxToTrip(item) {
       ...base,
       _dateFrom: p.checkIn  || '',
       _dateTo:   p.checkOut || '',
-      name: p.hotelName || p.destination || '',
+      name: p.destination || p.hotelName || '',
       emoji: '🏨',
       dates: dateRange(p.checkIn, p.checkOut),
       short: n ? `${n} Nächte` : '',
