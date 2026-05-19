@@ -4,7 +4,7 @@ import { db } from './firebase.js';
 import { useCollection } from './hooks/useFirestore.js';
 import { TRIPS, FAMILY, INBOX } from './data/mockData.js';
 import { extractTripFromEmail } from './utils/parseEmail.js';
-import { inboxToTrip } from './utils/inboxToTrip.js';
+import { inboxToTrip, findMergeCandidate, mergeIntoTrip } from './utils/inboxToTrip.js';
 
 import DesktopApp from './screens/DesktopApp.jsx';
 import HomeScreen from './screens/HomeScreen.jsx';
@@ -18,6 +18,7 @@ import ShareSheet from './components/ShareSheet.jsx';
 import ExpenseSheet from './components/ExpenseSheet.jsx';
 import DocsSheet from './components/DocsSheet.jsx';
 import AddTripSheet from './components/AddTripSheet.jsx';
+import MergeSheet from './components/MergeSheet.jsx';
 import DeleteConfirmSheet from './components/DeleteConfirmSheet.jsx';
 import WanderlyLogo from './components/WanderlyLogo.jsx';
 import Toast from './components/Toast.jsx';
@@ -73,6 +74,7 @@ export default function App() {
   const [expenseSheet, setExpenseSheet] = useState(null); // null | 'add' | expense-object
   const [emlParsing, setEmlParsing]     = useState(false);
   const [inboxImportId, setInboxImportId] = useState(null);
+  const [mergeState, setMergeState]     = useState(null); // { candidate, item }
 
   const { data: trips,      loading: tripsLoading    } = useCollection('trips',    TRIPS);
   const { data: family,     loading: familyLoading   } = useCollection('family',   FAMILY);
@@ -162,6 +164,27 @@ export default function App() {
   }
 
   function handleImportBooking(item) {
+    const candidate = findMergeCandidate(trips, item);
+    if (candidate) {
+      setMergeState({ candidate, item });
+    } else {
+      setInboxImportId(item.id);
+      setEditTrip(inboxToTrip(item));
+      setAddTrip(true);
+    }
+  }
+
+  function handleMergeConfirm() {
+    const { candidate, item } = mergeState;
+    setMergeState(null);
+    setInboxImportId(item.id);
+    setEditTrip(mergeIntoTrip(candidate, item));
+    setAddTrip(true);
+  }
+
+  function handleMergeAsNew() {
+    const { item } = mergeState;
+    setMergeState(null);
     setInboxImportId(item.id);
     setEditTrip(inboxToTrip(item));
     setAddTrip(true);
@@ -286,6 +309,7 @@ export default function App() {
       {addTrip && <AddTripSheet onClose={() => { setAddTrip(false); setEditTrip(null); }} onAdd={handleAddTrip} onSave={handleSaveTrip} initialTrip={editTrip} />}
       {expenseSheet && <ExpenseSheet expense={expenseSheet === 'add' ? null : expenseSheet} family={family} onSave={expenseSheet === 'add' ? handleAddExpense : handleEditExpense} onDelete={handleDeleteExpense} onClose={() => setExpenseSheet(null)} />}
       {deleteConfirm && <DeleteConfirmSheet trip={deleteConfirm} onCancel={() => setDeleteConfirm(null)} onConfirm={deleteTrip} />}
+      {mergeState && <MergeSheet existingTrip={mergeState.candidate} newItem={mergeState.item} onMerge={handleMergeConfirm} onNewTrip={handleMergeAsNew} onClose={() => setMergeState(null)} />}
       {emlParsing && <Toast msg="✉️ Buchungsmail wird gelesen…" />}
       {!emlParsing && toast && <Toast msg={toast} />}
     </div>

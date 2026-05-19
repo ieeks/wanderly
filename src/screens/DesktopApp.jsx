@@ -3,7 +3,7 @@ import { LayoutDashboard, Briefcase, Inbox, Users, ArrowLeftRight, FolderOpen } 
 import AddTripSheet from '../components/AddTripSheet.jsx';
 import ShareSheet from '../components/ShareSheet.jsx';
 import { extractTripFromEmail } from '../utils/parseEmail.js';
-import { inboxToTrip } from '../utils/inboxToTrip.js';
+import { inboxToTrip, findMergeCandidate, mergeIntoTrip } from '../utils/inboxToTrip.js';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase.js';
 import { calcBalances, findCreditorDebtor, defaultPayer } from '../utils/splitCalc.js';
@@ -164,6 +164,63 @@ function ParsedTripModal({ state, onConfirm, onEdit, onDiscard }) {
             </div>
           </>
         )}
+      </div>
+    </div>
+  );
+}
+
+// ─── MergeModal ───────────────────────────────────────────────
+const TYPE_LABEL = { flight:'✈ Flug', hotel:'🏨 Hotel', train:'🚆 Zug', car:'🚗 Mietwagen', insurance:'🛡 Versicherung' };
+
+function MergeModal({ existingTrip, newItem, onMerge, onNewTrip, onClose }) {
+  const p = newItem?.parsed || {};
+  const typeLabel = TYPE_LABEL[p.type] || p.type || '';
+  return (
+    <div style={{ position:'fixed', inset:0, background:'rgba(45,31,21,0.50)', backdropFilter:'blur(8px)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:200 }}>
+      <div style={{ background:'var(--paper)', borderRadius:22, padding:30, width:520, maxWidth:'calc(100dvw - 48px)', boxShadow:'0 32px 80px rgba(45,31,21,0.30)', display:'flex', flexDirection:'column', gap:20 }}>
+        <div>
+          <div className="mono" style={{ fontSize:9, color:'var(--terra)', letterSpacing:'0.14em', textTransform:'uppercase', marginBottom:4 }}>Buchung erkannt</div>
+          <div className="serif" style={{ fontSize:24, fontWeight:600, letterSpacing:'-0.02em' }}>Zu bestehender Reise hinzufügen?</div>
+        </div>
+
+        <div style={{ background:'var(--cream)', borderRadius:14, padding:16 }}>
+          <div className="mono" style={{ fontSize:9, textTransform:'uppercase', letterSpacing:'0.12em', color:'var(--muted)', marginBottom:10 }}>Bestehende Reise</div>
+          <div className="row" style={{ gap:14, alignItems:'center' }}>
+            <div style={{ width:48, height:48, borderRadius:14, background:existingTrip.bg, display:'flex', alignItems:'center', justifyContent:'center', fontSize:24, flexShrink:0 }}>{existingTrip.emoji}</div>
+            <div>
+              <div style={{ fontWeight:700, fontSize:16 }}>{existingTrip.name}</div>
+              <div className="mono" style={{ fontSize:11, color:'var(--muted)', marginTop:3 }}>{existingTrip.dates} · {existingTrip.short}</div>
+            </div>
+          </div>
+          <div className="row" style={{ marginTop:10, gap:6, flexWrap:'wrap' }}>
+            {existingTrip.flight      && <span className="chip" style={{ fontSize:10 }}>✈ Flug vorhanden</span>}
+            {existingTrip.train       && <span className="chip" style={{ fontSize:10 }}>🚆 Zug vorhanden</span>}
+            {existingTrip.hotel?.name && <span className="chip" style={{ fontSize:10 }}>🏨 {existingTrip.hotel.name}</span>}
+          </div>
+        </div>
+
+        <div style={{ background:'rgba(201,111,74,0.08)', borderRadius:14, padding:16, border:'1.5px solid rgba(201,111,74,0.20)' }}>
+          <div className="mono" style={{ fontSize:9, textTransform:'uppercase', letterSpacing:'0.12em', color:'var(--muted)', marginBottom:10 }}>Neue Buchung · {typeLabel}</div>
+          <div style={{ fontWeight:600, fontSize:14 }}>{newItem.from}: {newItem.subject}</div>
+          {p.hotelName   && <div style={{ fontSize:13, color:'var(--ink-2)', marginTop:4 }}>🏨 {p.hotelName}</div>}
+          {p.destination && !p.hotelName && <div style={{ fontSize:13, color:'var(--ink-2)', marginTop:4 }}>📍 {p.destination}</div>}
+          {(p.checkIn || p.departureDate) && (
+            <div className="mono" style={{ fontSize:11, color:'var(--muted)', marginTop:4 }}>
+              {p.checkIn || p.departureDate}{(p.checkOut || p.returnDate) ? ` → ${p.checkOut || p.returnDate}` : ''}
+            </div>
+          )}
+          {p.totalAmount > 0 && (
+            <div className="mono" style={{ fontSize:12, color:'var(--terra)', fontWeight:700, marginTop:4 }}>
+              € {p.totalAmount.toFixed(2).replace('.', ',')}
+            </div>
+          )}
+        </div>
+
+        <div className="row" style={{ gap:8 }}>
+          <button className="btn ghost" onClick={onClose} style={{ justifyContent:'center', padding:'11px 16px' }}>Abbrechen</button>
+          <button className="btn ghost" onClick={onNewTrip} style={{ justifyContent:'center', padding:'11px 16px', flex:1 }}>Als neue Reise anlegen</button>
+          <button className="btn terra" onClick={onMerge} style={{ flex:2, justifyContent:'center', padding:'11px 16px' }}>✦ Zu „{existingTrip.name}" hinzufügen</button>
+        </div>
       </div>
     </div>
   );
@@ -985,6 +1042,7 @@ export default function DesktopApp({ trips, family, inboxItems, expenses, onAddT
   const [shareId, setShareId]       = useState(null);
   const [desktopToast, setDesktopToast] = useState(null);
   const [inboxImportId, setInboxImportId] = useState(null);
+  const [mergeState, setMergeState] = useState(null); // { candidate, item }
 
   const wrapRef = useRef(null);
 
@@ -1034,9 +1092,27 @@ export default function DesktopApp({ trips, family, inboxItems, expenses, onAddT
   }
 
   function handleImportBooking(item) {
+    const candidate = findMergeCandidate(trips, item);
+    if (candidate) {
+      setMergeState({ candidate, item });
+    } else {
+      setInboxImportId(item.id);
+      setEditTrip(inboxToTrip(item));
+    }
+  }
+
+  function handleMergeConfirm() {
+    const { candidate, item } = mergeState;
+    setMergeState(null);
+    setInboxImportId(item.id);
+    setEditTrip(mergeIntoTrip(candidate, item));
+  }
+
+  function handleMergeAsNew() {
+    const { item } = mergeState;
+    setMergeState(null);
     setInboxImportId(item.id);
     setEditTrip(inboxToTrip(item));
-    setAddTripOpen(true);
   }
 
   async function handleNewTrip(newTrip) {
@@ -1091,6 +1167,15 @@ export default function DesktopApp({ trips, family, inboxItems, expenses, onAddT
           </div>
         </div>
         <DropVeil on={over} />
+        {mergeState && (
+          <MergeModal
+            existingTrip={mergeState.candidate}
+            newItem={mergeState.item}
+            onMerge={handleMergeConfirm}
+            onNewTrip={handleMergeAsNew}
+            onClose={() => setMergeState(null)}
+          />
+        )}
         <ParsedTripModal
           state={parseState}
           onConfirm={confirmParsedTrip}

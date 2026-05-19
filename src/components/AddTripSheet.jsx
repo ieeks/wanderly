@@ -49,8 +49,8 @@ export default function AddTripSheet({ onClose, onAdd, onSave, initialTrip }) {
       paid: '',
     };
     const dateParts = (trip.dates || '').split('–').map(s => s.trim());
-    const dateFrom = parseDateToISO(dateParts[0] || '');
-    const dateTo   = parseDateToISO(dateParts[1] || dateParts[0] || '');
+    const dateFrom = trip._dateFrom ? trip._dateFrom.slice(0, 10) : parseDateToISO(dateParts[0] || '');
+    const dateTo   = trip._dateTo   ? trip._dateTo.slice(0, 10)   : parseDateToISO(dateParts[1] || dateParts[0] || '');
     const type = trip.flight ? 'flight' : trip.train ? 'train' : 'drive';
     const t = trip;
     return {

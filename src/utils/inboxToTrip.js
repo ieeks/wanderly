@@ -60,6 +60,8 @@ export function inboxToTrip(item) {
     const n = nights(p.departureDate, p.returnDate);
     return {
       ...base,
+      _dateFrom: p.departureDate || '',
+      _dateTo:   p.returnDate    || '',
       name: p.destination || '',
       emoji: '✈️',
       dates: dateRange(p.departureDate, p.returnDate),
@@ -86,6 +88,8 @@ export function inboxToTrip(item) {
     const n = p.nights || nights(p.checkIn, p.checkOut);
     return {
       ...base,
+      _dateFrom: p.checkIn  || '',
+      _dateTo:   p.checkOut || '',
       name: p.hotelName || p.destination || '',
       emoji: '🏨',
       dates: dateRange(p.checkIn, p.checkOut),
@@ -106,6 +110,8 @@ export function inboxToTrip(item) {
     const dep = parseIso(p.departureDate);
     return {
       ...base,
+      _dateFrom: p.departureDate || '',
+      _dateTo:   p.returnDate    || '',
       name: p.destination || '',
       emoji: '🚂',
       dates: dateRange(p.departureDate, p.returnDate),
@@ -124,6 +130,8 @@ export function inboxToTrip(item) {
 
   return {
     ...base,
+    _dateFrom: p.departureDate || p.checkIn  || '',
+    _dateTo:   p.returnDate    || p.checkOut || '',
     name: p.destination || '',
     emoji: '🌍',
     dates: dateRange(p.departureDate || p.checkIn, p.returnDate || p.checkOut),
@@ -131,4 +139,73 @@ export function inboxToTrip(item) {
     route: p.destination || '',
     total: p.totalAmount || 0,
   };
+}
+
+// Returns the first existing trip that would benefit from merging with this inbox item.
+// Checks name similarity + that the booking type isn't already present on the trip.
+export function findMergeCandidate(trips, inboxItem) {
+  const p = inboxItem.parsed || {};
+  const dest = (p.destination || p.hotelName || '').toLowerCase().trim();
+  if (dest.length < 3) return null;
+
+  return trips.find(t => {
+    if (p.type === 'hotel'  && t.hotel?.name) return false;
+    if (p.type === 'flight' && t.flight)      return false;
+    if (p.type === 'train'  && t.train)       return false;
+
+    const tName = (t.name || '').toLowerCase().trim();
+    if (tName.length < 3) return false;
+    return tName.includes(dest) || dest.includes(tName);
+  }) || null;
+}
+
+// Returns a copy of existingTrip with the new booking details merged in.
+export function mergeIntoTrip(existingTrip, inboxItem) {
+  const p = inboxItem.parsed || {};
+  const merged = { ...existingTrip };
+  const addedCost = p.totalAmount || 0;
+
+  if (p.type === 'hotel') {
+    const ci = parseIso(p.checkIn);
+    const co = parseIso(p.checkOut);
+    merged.hotel = {
+      name: p.hotelName || p.destination || '',
+      loc:  p.destination || existingTrip.name || '',
+      ci:   ci ? fmtHotel(ci, '15:00') : '',
+      co:   co ? fmtHotel(co, '11:00') : '',
+    };
+    if (addedCost) merged.costHotel = addedCost;
+    if (p.checkIn  && !merged._dateFrom) merged._dateFrom = p.checkIn;
+    if (p.checkOut && !merged._dateTo)   merged._dateTo   = p.checkOut;
+  } else if (p.type === 'flight') {
+    const dep = parseIso(p.departureDate);
+    merged.flight = {
+      from:     p.fromIata  || 'VIE',
+      fromCity: 'Wien',
+      to:       p.toIata    || '',
+      toCity:   p.destination || existingTrip.name || '',
+      no:       p.flightNr  || '',
+      date:     dep ? fmtFlight(dep) : '',
+      depart:   p.departureTime || '',
+      arrive:   p.arrivalTime   || '',
+    };
+    if (addedCost) merged.costFlight = addedCost;
+    if (p.departureDate && !merged._dateFrom) merged._dateFrom = p.departureDate;
+    if (p.returnDate    && !merged._dateTo)   merged._dateTo   = p.returnDate;
+  } else if (p.type === 'train') {
+    const dep = parseIso(p.departureDate);
+    merged.train = {
+      from:   'Wien Hbf',
+      to:     p.destination || existingTrip.name || '',
+      no:     p.flightNr   || '',
+      date:   dep ? fmtFlight(dep) : '',
+      depart: '', arrive: '', wagon: '', seats: '',
+    };
+    if (p.departureDate && !merged._dateFrom) merged._dateFrom = p.departureDate;
+    if (p.returnDate    && !merged._dateTo)   merged._dateTo   = p.returnDate;
+  }
+
+  merged.total = (existingTrip.total || 0) + addedCost;
+  merged.due   = merged.total - (existingTrip.paid || 0);
+  return merged;
 }
