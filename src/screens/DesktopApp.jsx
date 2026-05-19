@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, createContext, useContext } from 'react';
+import { LayoutDashboard, Briefcase, Inbox, Users, ArrowLeftRight, FolderOpen } from 'lucide-react';
 import AddTripSheet from '../components/AddTripSheet.jsx';
 import ShareSheet from '../components/ShareSheet.jsx';
 import { extractTripFromEmail } from '../utils/parseEmail.js';
@@ -178,12 +179,12 @@ function Av({ f, size = 28, fontSize = 13, style: extra = {} }) {
 function Sidebar({ activeView, activeTrip, collapsed, onToggleCollapse, onSelectView, onSelectTrip }) {
   const { trips, family } = useCtx();
   const NAV = [
-    { id:'dashboard', l:'Dashboard',     ic:'◐' },
-    { id:'trips',     l:'Alle Reisen',   ic:'🧳' },
-    { id:'inbox',     l:'Inbox',         ic:'📥', badge:3 },
-    { id:'family',    l:'Familie',       ic:'👨‍👩‍👦' },
-    { id:'split',     l:'Split & Settle',ic:'⇄' },
-    { id:'docs',      l:'Dokumente',     ic:'📁' },
+    { id:'dashboard', l:'Dashboard',     Icon: LayoutDashboard },
+    { id:'trips',     l:'Alle Reisen',   Icon: Briefcase },
+    { id:'inbox',     l:'Inbox',         Icon: Inbox, badge:3 },
+    { id:'family',    l:'Familie',       Icon: Users },
+    { id:'split',     l:'Split & Settle',Icon: ArrowLeftRight },
+    { id:'docs',      l:'Dokumente',     Icon: FolderOpen },
   ];
   return (
     <div className="sb" data-sidebar={collapsed ? 'collapsed' : 'open'}>
@@ -200,7 +201,7 @@ function Sidebar({ activeView, activeTrip, collapsed, onToggleCollapse, onSelect
       <div className="col" style={{ gap:2 }}>
         {NAV.map(n => (
           <div key={n.id} className={'sb-item' + (activeView === n.id ? ' active' : '')} onClick={() => onSelectView(n.id)}>
-            <span className="dot">{n.ic}</span>
+            <span className="dot"><n.Icon size={16} strokeWidth={1.8} /></span>
             <span className="sb-label grow">{n.l}</span>
             {n.badge && <span className="chip sb-label" style={{ padding:'1px 7px', fontSize:10 }}>{n.badge}</span>}
           </div>
