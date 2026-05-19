@@ -94,6 +94,16 @@ export default function App() {
     });
   }, [family]);
 
+  // One-time migration: fix payerId on auto-imported expenses to defaultPayer
+  useEffect(() => {
+    if (family.length === 0 || expenses.length === 0) return;
+    const payer = family.find(f => f.defaultPayer);
+    if (!payer) return;
+    expenses
+      .filter(e => e.id.startsWith('exp_') && e.payerId !== payer.id)
+      .forEach(e => setDoc(doc(db, 'expenses', e.id), { payerId: payer.id }, { merge: true }));
+  }, [expenses, family]);
+
   const ROUTE_DEPTH = { home:0, inbox:0, split:0, me:0, detail:1, itinerary:2 };
   const TAB_ORDER   = { home:0, inbox:1, split:2, me:3 };
 
