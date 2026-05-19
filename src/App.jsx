@@ -4,6 +4,7 @@ import { db } from './firebase.js';
 import { useCollection } from './hooks/useFirestore.js';
 import { TRIPS, FAMILY, INBOX } from './data/mockData.js';
 import { extractTripFromEmail } from './utils/parseEmail.js';
+import { inboxToTrip } from './utils/inboxToTrip.js';
 
 import DesktopApp from './screens/DesktopApp.jsx';
 import HomeScreen from './screens/HomeScreen.jsx';
@@ -71,6 +72,7 @@ export default function App() {
   const [toast, setToast]             = useState(null);
   const [expenseSheet, setExpenseSheet] = useState(null); // null | 'add' | expense-object
   const [emlParsing, setEmlParsing]     = useState(false);
+  const [inboxImportId, setInboxImportId] = useState(null);
 
   const { data: trips,      loading: tripsLoading    } = useCollection('trips',    TRIPS);
   const { data: family,     loading: familyLoading   } = useCollection('family',   FAMILY);
@@ -152,7 +154,17 @@ export default function App() {
 
   async function handleSaveTrip(updated) {
     await setDoc(doc(db, 'trips', updated.id), updated);
+    if (inboxImportId) {
+      await setDoc(doc(db, 'inbox', String(inboxImportId)), { tag: updated.id, read: true }, { merge: true });
+      setInboxImportId(null);
+    }
     setEditTrip(null);
+  }
+
+  function handleImportBooking(item) {
+    setInboxImportId(item.id);
+    setEditTrip(inboxToTrip(item));
+    setAddTrip(true);
   }
 
   async function deleteTrip(id) {
@@ -265,7 +277,7 @@ export default function App() {
       {route === 'home'      && <AnimatedScreen key="home"      direction={getDir('home')}>      <HomeScreen      trips={trips} onOpenTrip={id => go('detail', id)} onTab={tab} onAddTrip={() => setAddTrip(true)} inboxBadge={unreadCount} /></AnimatedScreen>}
       {route === 'detail'    && <AnimatedScreen key="detail"    direction={getDir('detail')}>    <TripDetail      tripId={tripId} trips={trips} family={family} onBack={() => go('home')} onShare={() => setShare(tripId)} onItinerary={id => go('itinerary', id)} onDocs={() => setDocs(true)} onDelete={t => setDeleteConfirm(t)} onEdit={t => { setEditTrip(t); setAddTrip(true); }} /></AnimatedScreen>}
       {route === 'itinerary' && <AnimatedScreen key="itinerary" direction={getDir('itinerary')}><ItineraryScreen tripId={tripId} trips={trips} onBack={() => go('detail')} onUpdateTrip={updateTripItinerary} /></AnimatedScreen>}
-      {route === 'inbox'     && <AnimatedScreen key="inbox"     direction={getDir('inbox')}>     <InboxScreen     items={inboxItems} onMarkRead={handleMarkRead} onTab={tab} onOpenTrip={id => go('detail', id)} onEmlFile={handleEmlFile} /></AnimatedScreen>}
+      {route === 'inbox'     && <AnimatedScreen key="inbox"     direction={getDir('inbox')}>     <InboxScreen     items={inboxItems} onMarkRead={handleMarkRead} onTab={tab} onOpenTrip={id => go('detail', id)} onEmlFile={handleEmlFile} onImportBooking={handleImportBooking} /></AnimatedScreen>}
       {route === 'split'     && <AnimatedScreen key="split"     direction={getDir('split')}>     <SplitScreen     onTab={tab} inboxBadge={unreadCount} family={family} expenses={expenses} onAddExpense={() => setExpenseSheet('add')} onEditExpense={e => setExpenseSheet(e)} onSettleAll={handleSettleAll} onUnsettleAll={handleUnsettleAll} /></AnimatedScreen>}
       {route === 'me'        && <AnimatedScreen key="me"        direction={getDir('me')}>        <MeScreen        onTab={tab} inboxBadge={unreadCount} family={family} onEditPerson={handleEditPerson} /></AnimatedScreen>}
 

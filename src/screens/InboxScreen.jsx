@@ -46,7 +46,7 @@ function PasteSheet({ onSubmit, onClose }) {
   );
 }
 
-export default function InboxScreen({ items, onMarkRead, onTab, onOpenTrip, onEmlFile }) {
+export default function InboxScreen({ items, onMarkRead, onTab, onOpenTrip, onEmlFile, onImportBooking }) {
   const unread = items.filter(i => !i.read).length;
   const fileRef = useRef(null);
   const [showPaste, setShowPaste] = useState(false);
@@ -86,7 +86,12 @@ export default function InboxScreen({ items, onMarkRead, onTab, onOpenTrip, onEm
         </div>
         <div style={{ background:"#FFFAF1", borderRadius:20, margin:"0 18px", overflow:"hidden", boxShadow:"0 3px 12px rgba(45,31,21,0.06)" }}>
           {items.map((item, i) => (
-            <div key={item.id} onClick={() => { onMarkRead(item.id); item.tag&&onOpenTrip(item.tag); }}
+            <div key={item.id}
+              onClick={() => {
+                onMarkRead(item.id);
+                if (item.tag) onOpenTrip(item.tag);
+                else if (item.parsed && onImportBooking) onImportBooking(item);
+              }}
               style={{ display:"flex", alignItems:"flex-start", gap:10, padding:"12px 14px", borderBottom: i<items.length-1?"1px solid rgba(45,31,21,0.06)":"none", cursor:"pointer" }}>
               <div style={{ width:7, height:7, borderRadius:"50%", background:item.read?"transparent":"#C96F4A", marginTop:7, flexShrink:0 }} />
               <div style={{ width:38, height:38, borderRadius:12, background:item.bg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
@@ -99,7 +104,10 @@ export default function InboxScreen({ items, onMarkRead, onTab, onOpenTrip, onEm
                 </div>
                 <div style={{ fontSize:12, fontWeight:item.read?400:600, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{item.subject}</div>
                 <div style={{ fontSize:11, color:"#9F8A6F", marginTop:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{item.preview}</div>
-                {item.tag && <div style={{ display:"inline-flex", alignItems:"center", gap:4, marginTop:4, padding:"2px 7px", borderRadius:999, background:"rgba(45,31,21,0.06)", fontSize:9, fontWeight:600, color:TAG_COLOR[item.tag] }}><Ic name="Tag" size={9} color={TAG_COLOR[item.tag]} />{TAG_NAME[item.tag]}</div>}
+                <div style={{ display:"flex", gap:6, marginTop:4, flexWrap:"wrap" }}>
+                  {item.tag && <div style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"2px 7px", borderRadius:999, background:"rgba(45,31,21,0.06)", fontSize:9, fontWeight:600, color:TAG_COLOR[item.tag] }}><Ic name="Tag" size={9} color={TAG_COLOR[item.tag]} />{TAG_NAME[item.tag]}</div>}
+                  {!item.tag && item.parsed && <div style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"2px 8px", borderRadius:999, background:"rgba(201,111,74,0.12)", fontSize:9, fontWeight:700, color:"#C96F4A" }}><Ic name="Plus" size={9} color="#C96F4A" />Als Reise anlegen</div>}
+                </div>
               </div>
             </div>
           ))}

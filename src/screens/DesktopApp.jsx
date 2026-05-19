@@ -3,6 +3,9 @@ import { LayoutDashboard, Briefcase, Inbox, Users, ArrowLeftRight, FolderOpen } 
 import AddTripSheet from '../components/AddTripSheet.jsx';
 import ShareSheet from '../components/ShareSheet.jsx';
 import { extractTripFromEmail } from '../utils/parseEmail.js';
+import { inboxToTrip } from '../utils/inboxToTrip.js';
+import { doc, setDoc } from 'firebase/firestore';
+import { db } from '../firebase.js';
 import { calcBalances, findCreditorDebtor, defaultPayer } from '../utils/splitCalc.js';
 import '../styles/desktop.css';
 
@@ -669,7 +672,7 @@ function AllTripsView({ onSelectTrip }) {
 
 // ─── InboxView ────────────────────────────────────────────────
 function InboxView() {
-  const { inboxItems, trips, onEmlUpload } = useCtx();
+  const { inboxItems, trips, onEmlUpload, onImportBooking } = useCtx();
   const [selected, setSelected] = useState(null);
   const fileRef = useRef(null);
 
@@ -725,14 +728,38 @@ function InboxView() {
           </div>
         </div>
         <div>
-          {selected !== null ? (
-            <div className="card">
-              <div className="label" style={{ marginBottom:8 }}>E-Mail Details</div>
-              <div className="display" style={{ fontSize:20, marginTop:4 }}>{inboxItems[selected]?.subject}</div>
-              <div className="mono" style={{ fontSize:11, color:'var(--muted)', marginTop:6 }}>{inboxItems[selected]?.from}</div>
-              {inboxItems[selected]?.body && <p style={{ fontSize:13, lineHeight:1.6, marginTop:16 }}>{inboxItems[selected].body}</p>}
-            </div>
-          ) : (
+          {selected !== null ? (() => {
+            const m = inboxItems[selected];
+            const p = m?.parsed;
+            return (
+              <div className="card" style={{ display:'flex', flexDirection:'column', gap:16 }}>
+                <div>
+                  <div className="label" style={{ marginBottom:6 }}>Buchung erkannt</div>
+                  <div className="display" style={{ fontSize:20 }}>{m?.subject}</div>
+                  <div className="mono" style={{ fontSize:11, color:'var(--muted)', marginTop:4 }}>{m?.from} · {m?.time}</div>
+                </div>
+                {p && (
+                  <div style={{ background:'var(--cream)', borderRadius:14, padding:16, display:'flex', flexDirection:'column', gap:8 }}>
+                    {p.destination    && <div className="row" style={{ gap:10 }}><span className="mono" style={{ fontSize:10, color:'var(--muted)', width:90 }}>Destination</span><span style={{ fontSize:13, fontWeight:600 }}>{p.destination}</span></div>}
+                    {(p.departureDate || p.checkIn) && <div className="row" style={{ gap:10 }}><span className="mono" style={{ fontSize:10, color:'var(--muted)', width:90 }}>Datum</span><span style={{ fontSize:13 }}>{p.departureDate || p.checkIn}{(p.returnDate || p.checkOut) ? ` → ${p.returnDate || p.checkOut}` : ''}</span></div>}
+                    {p.flightNr       && <div className="row" style={{ gap:10 }}><span className="mono" style={{ fontSize:10, color:'var(--muted)', width:90 }}>Flugnr.</span><span style={{ fontSize:13 }}>{p.flightNr}</span></div>}
+                    {p.hotelName      && <div className="row" style={{ gap:10 }}><span className="mono" style={{ fontSize:10, color:'var(--muted)', width:90 }}>Hotel</span><span style={{ fontSize:13 }}>{p.hotelName}</span></div>}
+                    {p.bookingRef     && <div className="row" style={{ gap:10 }}><span className="mono" style={{ fontSize:10, color:'var(--muted)', width:90 }}>Buchungs-Nr.</span><span style={{ fontSize:13, fontFamily:'var(--mono)' }}>{p.bookingRef}</span></div>}
+                    {p.totalAmount    && <div className="row" style={{ gap:10 }}><span className="mono" style={{ fontSize:10, color:'var(--muted)', width:90 }}>Betrag</span><span style={{ fontSize:13, fontWeight:700 }}>€ {p.totalAmount.toFixed(2).replace('.',',')}</span></div>}
+                  </div>
+                )}
+                {!m?.tag && p && (
+                  <button className="btn terra" style={{ alignSelf:'flex-start' }}
+                    onClick={() => onImportBooking?.(m)}>
+                    + Als neue Reise anlegen
+                  </button>
+                )}
+                {m?.tag && (
+                  <div className="chip paid" style={{ alignSelf:'flex-start', fontSize:11 }}>✓ Zugeordnet</div>
+                )}
+              </div>
+            );
+          })() : (
             <div className="card" style={{ background:'rgba(255,255,255,0.55)', border:'1.5px dashed var(--line)', textAlign:'center', padding:36 }}>
               <div style={{ fontSize:36, marginBottom:8, opacity:0.4 }}>📨</div>
               <div className="serif" style={{ fontSize:20, fontWeight:600 }}>Mail anklicken</div>
@@ -957,6 +984,7 @@ export default function DesktopApp({ trips, family, inboxItems, expenses, onAddT
   const [addTripOpen, setAddTripOpen] = useState(false);
   const [shareId, setShareId]       = useState(null);
   const [desktopToast, setDesktopToast] = useState(null);
+  const [inboxImportId, setInboxImportId] = useState(null);
 
   const wrapRef = useRef(null);
 
@@ -996,9 +1024,19 @@ export default function DesktopApp({ trips, family, inboxItems, expenses, onAddT
 
   async function handleSheetSave(updatedTrip) {
     await onAddTrip?.(updatedTrip);
+    if (inboxImportId) {
+      await setDoc(doc(db, 'inbox', String(inboxImportId)), { tag: updatedTrip.id, read: true }, { merge: true });
+      setInboxImportId(null);
+    }
     setEditTrip(null);
     setTripId(updatedTrip.id);
     setView('trip');
+  }
+
+  function handleImportBooking(item) {
+    setInboxImportId(item.id);
+    setEditTrip(inboxToTrip(item));
+    setAddTripOpen(true);
   }
 
   async function handleNewTrip(newTrip) {
@@ -1025,7 +1063,7 @@ export default function DesktopApp({ trips, family, inboxItems, expenses, onAddT
   })[view] || ['wanderly'];
 
   return (
-    <Ctx.Provider value={{ trips, family, inboxItems, expenses, onAddExpense, onEditExpense, onDeleteExpense, onSettleAll, onUnsettleAll, onToggleFav, onEmlUpload: handleEmlFile, onNewTrip: () => setAddTripOpen(true), onShare: setShareId, navigate: setView }}>
+    <Ctx.Provider value={{ trips, family, inboxItems, expenses, onAddExpense, onEditExpense, onDeleteExpense, onSettleAll, onUnsettleAll, onToggleFav, onEmlUpload: handleEmlFile, onNewTrip: () => setAddTripOpen(true), onShare: setShareId, navigate: setView, onImportBooking: handleImportBooking }}>
       <div className="wd" data-density="comfortable" ref={wrapRef} style={{ width:'100%', height:'100dvh', position:'relative' }}>
         <div className="macwin" style={{ borderRadius:0, height:'100%' }}>
           <Titlebar breadcrumbs={breadcrumbs} />
