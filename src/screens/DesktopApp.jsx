@@ -1036,7 +1036,6 @@ export default function DesktopApp({ trips, family, inboxItems, expenses, onAddT
   function handleImportBooking(item) {
     setInboxImportId(item.id);
     setEditTrip(inboxToTrip(item));
-    setAddTripOpen(true);
   }
 
   async function handleNewTrip(newTrip) {

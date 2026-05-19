@@ -60,6 +60,8 @@ export function inboxToTrip(item) {
     const n = nights(p.departureDate, p.returnDate);
     return {
       ...base,
+      _dateFrom: p.departureDate || '',
+      _dateTo:   p.returnDate    || '',
       name: p.destination || '',
       emoji: '✈️',
       dates: dateRange(p.departureDate, p.returnDate),
@@ -86,6 +88,8 @@ export function inboxToTrip(item) {
     const n = p.nights || nights(p.checkIn, p.checkOut);
     return {
       ...base,
+      _dateFrom: p.checkIn  || '',
+      _dateTo:   p.checkOut || '',
       name: p.hotelName || p.destination || '',
       emoji: '🏨',
       dates: dateRange(p.checkIn, p.checkOut),
@@ -106,6 +110,8 @@ export function inboxToTrip(item) {
     const dep = parseIso(p.departureDate);
     return {
       ...base,
+      _dateFrom: p.departureDate || '',
+      _dateTo:   p.returnDate    || '',
       name: p.destination || '',
       emoji: '🚂',
       dates: dateRange(p.departureDate, p.returnDate),
@@ -124,6 +130,8 @@ export function inboxToTrip(item) {
 
   return {
     ...base,
+    _dateFrom: p.departureDate || p.checkIn  || '',
+    _dateTo:   p.returnDate    || p.checkOut || '',
     name: p.destination || '',
     emoji: '🌍',
     dates: dateRange(p.departureDate || p.checkIn, p.returnDate || p.checkOut),
