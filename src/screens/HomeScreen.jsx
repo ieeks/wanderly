@@ -23,6 +23,7 @@ export default function HomeScreen({ trips, onOpenTrip, onTab, onAddTrip, inboxB
   const [searchOpen,   setSearchOpen]   = useState(false);
   const [query,        setQuery]        = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
+  const [pastOpen,     setPastOpen]     = useState(false);
 
   const totalBudget = trips.reduce((a,t) => a+t.total, 0);
   const totalPaid   = trips.reduce((a,t) => a+t.paid, 0);
@@ -41,13 +42,14 @@ export default function HomeScreen({ trips, onOpenTrip, onTab, onAddTrip, inboxB
   });
 
   const STACK_VISIBLE = 4;
-  const TODAY_PROTO = new Date(2026, 4, 12);
+  const TODAY = new Date();
+  TODAY.setHours(0, 0, 0, 0);
   const upcoming = sorted.filter(t => {
-    if (t.dates.match(/^\d{4}-\d{2}-\d{2}/)) return new Date(t.dates) >= TODAY_PROTO;
+    if (t.dates.match(/^\d{4}-\d{2}-\d{2}/)) return new Date(t.dates) >= TODAY;
     const m = t.dates.match(/(\d+)[–\-].*?([A-Za-züä]+)/);
     if (!m) return true;
     const months = {Jan:0,Feb:1,Mär:2,Mrz:2,Apr:3,Mai:4,Jun:5,Jul:6,Aug:7,Sep:8,Okt:9,Nov:10,Dez:11};
-    return new Date(2026, months[m[2]]||0, parseInt(m[1])) >= TODAY_PROTO;
+    return new Date(TODAY.getFullYear(), months[m[2]]||0, parseInt(m[1])) >= TODAY;
   });
   const past = sorted.filter(t => !upcoming.includes(t));
 
@@ -72,6 +74,49 @@ export default function HomeScreen({ trips, onOpenTrip, onTab, onAddTrip, inboxB
     setSearchOpen(false);
     setQuery('');
     setActiveFilter('all');
+  }
+
+  function renderPastSection() {
+    if (past.length === 0) return null;
+    return (
+      <div style={{ padding:"0 18px", marginTop:18 }}>
+        <div onClick={() => setPastOpen(o => !o)}
+          style={{ display:"flex", alignItems:"center", justifyContent:"space-between", cursor:"pointer", padding:"11px 14px", borderRadius:16, background:"rgba(45,31,21,0.045)" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+            <Ic name="Archive" size={14} color="#9F8A6F" />
+            <span style={{ fontFamily:"monospace", fontSize:10, letterSpacing:"0.14em", textTransform:"uppercase", color:"#9F8A6F", fontWeight:600 }}>Vergangen · {past.length}</span>
+          </div>
+          <Ic name={pastOpen ? "ChevronUp" : "ChevronDown"} size={16} color="#9F8A6F" />
+        </div>
+        {pastOpen && (
+          <div style={{ display:"flex", flexDirection:"column", gap:14, marginTop:14, animation:"slideInDown 240ms ease" }}>
+            {past.map(t => (
+              <div key={t.id} onClick={() => onOpenTrip(t.id)}
+                style={{ background:t.bg, borderRadius:24, padding:"16px 16px 18px", boxShadow:"0 6px 20px rgba(45,31,21,0.09)", cursor:"pointer", opacity:0.6 }}>
+                <div style={{ display:"flex", justifyContent:"space-between" }}>
+                  <div>
+                    <div style={{ fontFamily:"monospace", fontSize:9, letterSpacing:"0.14em", textTransform:"uppercase", color:"rgba(45,31,21,0.55)" }}>{t.dates}</div>
+                    <div style={{ fontFamily:"Georgia,serif", fontWeight:600, fontSize:26, lineHeight:1, marginTop:4, letterSpacing:"-0.02em" }}>{t.name} <span style={{ fontSize:20 }}>{t.emoji}</span></div>
+                    <div style={{ fontSize:11, color:"rgba(45,31,21,0.6)", marginTop:3 }}>{t.route} · {t.short}</div>
+                  </div>
+                  <div style={{ display:"flex", gap:4 }}>
+                    {t.flight && <Ic name="Plane" size={15} color="rgba(45,31,21,0.4)" />}
+                    {t.train  && <Ic name="Train" size={15} color="rgba(45,31,21,0.4)" />}
+                    {t.drive  && <Ic name="Car"   size={15} color="rgba(45,31,21,0.4)" />}
+                  </div>
+                </div>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:12 }}>
+                  <span style={{ fontFamily:"Georgia,serif", fontSize:20, fontWeight:600 }}>€ {t.total.toLocaleString("de-AT")}</span>
+                  {t.due > 0
+                    ? <span style={{ ...S.chip, color:"#9C4A28", background:"rgba(196,122,44,0.14)", border:"1px solid rgba(196,122,44,0.25)" }}><Ic name="Clock" size={10} color="#9C4A28" />{t.dueDate} · € {t.due.toLocaleString("de-AT")}</span>
+                    : <span style={{ ...S.chip, color:"#5B7148", background:"rgba(107,142,78,0.14)", border:"1px solid rgba(107,142,78,0.25)" }}><Ic name="Check" size={10} color="#5B7148" />bezahlt</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
   }
 
   if (trips.length === 0) {
@@ -244,10 +289,11 @@ export default function HomeScreen({ trips, onOpenTrip, onTab, onAddTrip, inboxB
 
         {/* Normal stack / list view */}
         {!searchOpen && !expanded && (
-          <div style={{ position:"relative", height:400, overflow:"hidden", padding:"0 18px", flexShrink:0 }}>
-            {sorted.map((t, i) => {
+          <>
+          <div style={{ position:"relative", height: upcoming.length === 0 ? 0 : (Math.min(upcoming.length, STACK_VISIBLE) - 1) * 74 + 180, overflow:"hidden", padding:"0 18px", flexShrink:0, transition:"height 360ms cubic-bezier(.32,.72,.0,1)" }}>
+            {upcoming.map((t, i) => {
               const top = i*74;
-              const rot = (i - Math.min(sorted.length-1, STACK_VISIBLE-1)/2) * 0.6;
+              const rot = (i - Math.min(upcoming.length-1, STACK_VISIBLE-1)/2) * 0.6;
               const visible = i < STACK_VISIBLE;
               return (
                 <div key={t.id} onClick={() => onOpenTrip(t.id)}
@@ -273,29 +319,27 @@ export default function HomeScreen({ trips, onOpenTrip, onTab, onAddTrip, inboxB
                 </div>
               );
             })}
-            {sorted.length > STACK_VISIBLE && (
+            {upcoming.length > STACK_VISIBLE && (
               <div
                 onClick={e => { e.stopPropagation(); setExpanded(true); }}
                 style={{ position:"absolute", bottom:12, left:0, right:0, display:"flex", justifyContent:"center", zIndex:50, cursor:"pointer" }}>
                 <div style={{ display:"flex", alignItems:"center", gap:6, background:"#2D1F15", color:"#FBF4E6", padding:"6px 14px", borderRadius:999, boxShadow:"0 3px 10px rgba(45,31,21,0.25)" }}>
                   <Ic name="LayoutList" size={12} color="#FBF4E6" />
-                  <span style={{ fontFamily:"monospace", fontSize:9, letterSpacing:"0.12em", textTransform:"uppercase", fontWeight:600 }}>+{sorted.length - STACK_VISIBLE} weitere · alle zeigen</span>
+                  <span style={{ fontFamily:"monospace", fontSize:9, letterSpacing:"0.12em", textTransform:"uppercase", fontWeight:600 }}>+{upcoming.length - STACK_VISIBLE} weitere · alle zeigen</span>
                 </div>
               </div>
             )}
           </div>
+          {renderPastSection()}
+          </>
         )}
 
         {!searchOpen && expanded && (
+          <>
           <div style={{ padding:"0 18px", display:"flex", flexDirection:"column", gap:14 }}>
-            {past.length > 0 && upcoming.length > 0 && (
-              <div style={{ fontFamily:"monospace", fontSize:9, letterSpacing:"0.14em", textTransform:"uppercase", color:"#9F8A6F", paddingLeft:2 }}>Bevorstehend</div>
-            )}
-            {[...upcoming, ...(past.length > 0 ? [{_divider:true}] : []), ...past].map((t, i) => t._divider ? (
-              <div key="divider" style={{ fontFamily:"monospace", fontSize:9, letterSpacing:"0.14em", textTransform:"uppercase", color:"rgba(45,31,21,0.35)", paddingLeft:2, marginTop:4 }}>Vergangen</div>
-            ) : (
+            {upcoming.map(t => (
               <div key={t.id} onClick={() => onOpenTrip(t.id)}
-                style={{ background:t.bg, borderRadius:24, padding:"16px 16px 18px", boxShadow:"0 6px 20px rgba(45,31,21,0.09)", cursor:"pointer", opacity: past.includes(t) ? 0.6 : 1 }}>
+                style={{ background:t.bg, borderRadius:24, padding:"16px 16px 18px", boxShadow:"0 6px 20px rgba(45,31,21,0.09)", cursor:"pointer" }}>
                 <div style={{ display:"flex", justifyContent:"space-between" }}>
                   <div>
                     <div style={{ fontFamily:"monospace", fontSize:9, letterSpacing:"0.14em", textTransform:"uppercase", color:"rgba(45,31,21,0.55)" }}>{t.dates}</div>
@@ -317,6 +361,8 @@ export default function HomeScreen({ trips, onOpenTrip, onTab, onAddTrip, inboxB
               </div>
             ))}
           </div>
+          {renderPastSection()}
+          </>
         )}
 
         <div style={{ textAlign:"center", marginTop:16, fontFamily:"monospace", fontSize:10, letterSpacing:"0.12em", textTransform:"uppercase", color:"rgba(45,31,21,0.45)" }}>tippe auf eine Reise</div>
