@@ -18,7 +18,7 @@ function fmt(n) {
   return n.toLocaleString('de-AT', { minimumFractionDigits:2, maximumFractionDigits:2 });
 }
 
-export default function SplitScreen({ onTab, inboxBadge = 0, family = [], expenses = [], onAddExpense, onEditExpense, onSettleAll, onUnsettleAll }) {
+export default function SplitScreen({ onTab, inboxBadge = 0, family = [], expenses = [], onAddExpense, onEditExpense, onSettleAll, onUnsettleAll, onSettleExpense }) {
   const unsettled = expenses.filter(e => !e.settled);
   const settled   = expenses.filter(e =>  e.settled);
 
@@ -103,6 +103,12 @@ export default function SplitScreen({ onTab, inboxBadge = 0, family = [], expens
                         <div style={{ fontFamily:"Georgia,serif", fontSize:15, fontWeight:600 }}>€ {fmt(e.amt)}</div>
                         <div style={{ fontFamily:"monospace", fontSize:9, color:"#9F8A6F" }}>50 / 50</div>
                       </div>
+                      <button
+                        onClick={ev => { ev.stopPropagation(); onSettleExpense?.(e.id, true); }}
+                        title="Als beglichen markieren"
+                        style={{ flexShrink:0, width:32, height:32, borderRadius:"50%", border:"1.5px solid rgba(91,113,72,0.35)", background:"rgba(107,142,78,0.12)", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", padding:0 }}>
+                        <Ic name="Check" size={15} color="#5B7148" />
+                      </button>
                     </div>
                   );
                 })}
@@ -130,6 +136,12 @@ export default function SplitScreen({ onTab, inboxBadge = 0, family = [], expens
                       <span style={{ fontFamily:"monospace", fontSize:9, color:"#9F8A6F" }}>{payer?.name} · {e.date}</span>
                     </div>
                     <div style={{ fontFamily:"Georgia,serif", fontSize:15, fontWeight:600, color:"#9F8A6F" }}>€ {fmt(e.amt)}</div>
+                    <button
+                      onClick={ev => { ev.stopPropagation(); onSettleExpense?.(e.id, false); }}
+                      title="Wieder als offen markieren"
+                      style={{ flexShrink:0, width:32, height:32, borderRadius:"50%", border:"1.5px solid rgba(45,31,21,0.15)", background:"transparent", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", padding:0 }}>
+                      <Ic name="RotateCcw" size={14} color="#9F8A6F" />
+                    </button>
                   </div>
                 );
               })}
