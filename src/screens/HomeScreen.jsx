@@ -34,7 +34,7 @@ export default function HomeScreen({ trips, onOpenTrip, onTab, onAddTrip, inboxB
       if (!d) return Infinity;
       if (d.match(/^\d{4}-\d{2}-\d{2}/)) return new Date(d).getTime();
       const months = { Jan:0,Feb:1,Mär:2,Mrz:2,Apr:3,Mai:4,Jun:5,Jul:6,Aug:7,Sep:8,Okt:9,Nov:10,Dez:11 };
-      const m = d.match(/(\d+)[–\-].*?([A-Za-züä]+)/);
+      const m = d.match(/(\d+)[–-].*?([A-Za-züä]+)/);
       if (m) return new Date(2026, months[m[2]]||0, parseInt(m[1])).getTime();
       return Infinity;
     };
@@ -46,12 +46,15 @@ export default function HomeScreen({ trips, onOpenTrip, onTab, onAddTrip, inboxB
   TODAY.setHours(0, 0, 0, 0);
   const upcoming = sorted.filter(t => {
     if (t.dates.match(/^\d{4}-\d{2}-\d{2}/)) return new Date(t.dates) >= TODAY;
-    const m = t.dates.match(/(\d+)[–\-].*?([A-Za-züä]+)/);
+    const m = t.dates.match(/(\d+)[–-].*?([A-Za-züä]+)/);
     if (!m) return true;
     const months = {Jan:0,Feb:1,Mär:2,Mrz:2,Apr:3,Mai:4,Jun:5,Jul:6,Aug:7,Sep:8,Okt:9,Nov:10,Dez:11};
     return new Date(TODAY.getFullYear(), months[m[2]]||0, parseInt(m[1])) >= TODAY;
   });
   const past = sorted.filter(t => !upcoming.includes(t));
+
+  const overdueDue  = past.reduce((a,t) => a+t.due, 0);
+  const upcomingDue = upcoming.reduce((a,t) => a+t.due, 0);
 
   const filteredTrips = sorted.filter(t => {
     const q = query.toLowerCase();
@@ -199,10 +202,25 @@ export default function HomeScreen({ trips, onOpenTrip, onTab, onAddTrip, inboxB
               <span style={{ fontFamily:"monospace", fontSize:11, color:"#5B7148", fontWeight:600 }}>€ {totalPaid.toLocaleString("de-AT")} paid</span>
             </div>
             <div style={{ marginTop:8 }}><Progress pct={(totalPaid/totalBudget)*100} /></div>
-            {totalDue > 0 && (
+            {totalDue === 0 ? (
               <div style={{ display:"flex", alignItems:"center", gap:5, marginTop:7 }}>
-                <Ic name="Clock" size={12} color="#C47A2C" />
-                <span style={{ fontFamily:"monospace", fontSize:10, color:"#C47A2C", fontWeight:600 }}>€ {totalDue.toLocaleString("de-AT")} ausstehend</span>
+                <Ic name="Check" size={12} color="#5B7148" />
+                <span style={{ fontFamily:"monospace", fontSize:10, color:"#5B7148", fontWeight:600 }}>alles bezahlt</span>
+              </div>
+            ) : (
+              <div style={{ display:"flex", flexWrap:"wrap", gap:"7px 14px", marginTop:7 }}>
+                {upcomingDue > 0 && (
+                  <div style={{ display:"flex", alignItems:"center", gap:5 }}>
+                    <Ic name="Clock" size={12} color="#C47A2C" />
+                    <span style={{ fontFamily:"monospace", fontSize:10, color:"#C47A2C", fontWeight:600 }}>€ {upcomingDue.toLocaleString("de-AT")} ausstehend</span>
+                  </div>
+                )}
+                {overdueDue > 0 && (
+                  <div style={{ display:"flex", alignItems:"center", gap:5 }}>
+                    <Ic name="AlertCircle" size={12} color="#B23A2E" />
+                    <span style={{ fontFamily:"monospace", fontSize:10, color:"#B23A2E", fontWeight:600 }}>€ {overdueDue.toLocaleString("de-AT")} überfällig</span>
+                  </div>
+                )}
               </div>
             )}
           </div>
