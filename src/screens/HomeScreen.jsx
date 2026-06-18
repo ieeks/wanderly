@@ -18,6 +18,31 @@ const CHIPS = [
   { id: 'drive',  label: '🚗 Auto'    },
 ];
 
+const MONTHS = { Jan:0,Feb:1,Mär:2,Mrz:2,Apr:3,Mai:4,Jun:5,Jul:6,Aug:7,Sep:8,Okt:9,Nov:10,Dez:11 };
+
+// Parses the first day/month from a `dates` string for chronological sorting.
+// Handles ISO ("2026-06-07"), "7–14 Jun" and "7 Jun – 14 Jun".
+function tripStart(dates, year) {
+  if (!dates) return Infinity;
+  if (/^\d{4}-\d{2}-\d{2}/.test(dates)) return new Date(dates).getTime();
+  const day = dates.match(/\d+/);
+  const mon = dates.match(/[A-Za-zäöü]{3,}/);
+  if (!day || !mon || MONTHS[mon[0]] == null) return Infinity;
+  return new Date(year, MONTHS[mon[0]], parseInt(day[0])).getTime();
+}
+
+// Parses the LAST day/month from a `dates` string — a trip is only "past"
+// once it has actually ended. Same formats as tripStart.
+function tripEnd(dates, year) {
+  if (!dates) return null;
+  const iso = dates.match(/\d{4}-\d{2}-\d{2}/g);
+  if (iso) return new Date(iso[iso.length - 1] + 'T00:00:00');
+  const days = dates.match(/\d+/g);
+  const mons = dates.match(/[A-Za-zäöü]{3,}/g);
+  if (!days || !mons || MONTHS[mons[mons.length - 1]] == null) return null;
+  return new Date(year, MONTHS[mons[mons.length - 1]], parseInt(days[days.length - 1]));
+}
+
 export default function HomeScreen({ trips, onOpenTrip, onTab, onAddTrip, inboxBadge = 0 }) {
   const [expanded,     setExpanded]     = useState(false);
   const [searchOpen,   setSearchOpen]   = useState(false);
@@ -29,27 +54,16 @@ export default function HomeScreen({ trips, onOpenTrip, onTab, onAddTrip, inboxB
   const totalPaid   = trips.reduce((a,t) => a+t.paid, 0);
   const totalDue    = trips.reduce((a,t) => a+t.due, 0);
 
-  const sorted = [...trips].sort((a, b) => {
-    const parseDate = d => {
-      if (!d) return Infinity;
-      if (d.match(/^\d{4}-\d{2}-\d{2}/)) return new Date(d).getTime();
-      const months = { Jan:0,Feb:1,Mär:2,Mrz:2,Apr:3,Mai:4,Jun:5,Jul:6,Aug:7,Sep:8,Okt:9,Nov:10,Dez:11 };
-      const m = d.match(/(\d+)[–-].*?([A-Za-züä]+)/);
-      if (m) return new Date(2026, months[m[2]]||0, parseInt(m[1])).getTime();
-      return Infinity;
-    };
-    return parseDate(a.dates) - parseDate(b.dates);
-  });
-
   const STACK_VISIBLE = 4;
   const TODAY = new Date();
   TODAY.setHours(0, 0, 0, 0);
+  const YEAR = TODAY.getFullYear();
+
+  const sorted = [...trips].sort((a, b) => tripStart(a.dates, YEAR) - tripStart(b.dates, YEAR));
+
   const upcoming = sorted.filter(t => {
-    if (t.dates.match(/^\d{4}-\d{2}-\d{2}/)) return new Date(t.dates) >= TODAY;
-    const m = t.dates.match(/(\d+)[–-].*?([A-Za-züä]+)/);
-    if (!m) return true;
-    const months = {Jan:0,Feb:1,Mär:2,Mrz:2,Apr:3,Mai:4,Jun:5,Jul:6,Aug:7,Sep:8,Okt:9,Nov:10,Dez:11};
-    return new Date(TODAY.getFullYear(), months[m[2]]||0, parseInt(m[1])) >= TODAY;
+    const end = tripEnd(t.dates, YEAR);
+    return !end || end >= TODAY;
   });
   const past = sorted.filter(t => !upcoming.includes(t));
 
