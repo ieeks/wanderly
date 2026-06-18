@@ -237,6 +237,12 @@ export default function App() {
     ));
   }
 
+  async function handleSettleExpense(id, settled) {
+    const exp = expenses.find(e => e.id === id);
+    if (!exp) return;
+    await setDoc(doc(db, 'expenses', id), { ...exp, settled });
+  }
+
   async function handleMarkRead(id) {
     await setDoc(doc(db, 'inbox', String(id)), { read: true }, { merge: true });
   }
@@ -301,7 +307,7 @@ export default function App() {
       {route === 'detail'    && <AnimatedScreen key="detail"    direction={getDir('detail')}>    <TripDetail      tripId={tripId} trips={trips} family={family} onBack={() => go('home')} onShare={() => setShare(tripId)} onItinerary={id => go('itinerary', id)} onDocs={() => setDocs(true)} onDelete={t => setDeleteConfirm(t)} onEdit={t => { setEditTrip(t); setAddTrip(true); }} /></AnimatedScreen>}
       {route === 'itinerary' && <AnimatedScreen key="itinerary" direction={getDir('itinerary')}><ItineraryScreen tripId={tripId} trips={trips} onBack={() => go('detail')} onUpdateTrip={updateTripItinerary} /></AnimatedScreen>}
       {route === 'inbox'     && <AnimatedScreen key="inbox"     direction={getDir('inbox')}>     <InboxScreen     items={inboxItems} onMarkRead={handleMarkRead} onTab={tab} onOpenTrip={id => go('detail', id)} onEmlFile={handleEmlFile} onImportBooking={handleImportBooking} /></AnimatedScreen>}
-      {route === 'split'     && <AnimatedScreen key="split"     direction={getDir('split')}>     <SplitScreen     onTab={tab} inboxBadge={unreadCount} family={family} expenses={expenses} onAddExpense={() => setExpenseSheet('add')} onEditExpense={e => setExpenseSheet(e)} onSettleAll={handleSettleAll} onUnsettleAll={handleUnsettleAll} /></AnimatedScreen>}
+      {route === 'split'     && <AnimatedScreen key="split"     direction={getDir('split')}>     <SplitScreen     onTab={tab} inboxBadge={unreadCount} family={family} expenses={expenses} onAddExpense={() => setExpenseSheet('add')} onEditExpense={e => setExpenseSheet(e)} onSettleAll={handleSettleAll} onUnsettleAll={handleUnsettleAll} onSettleExpense={handleSettleExpense} /></AnimatedScreen>}
       {route === 'me'        && <AnimatedScreen key="me"        direction={getDir('me')}>        <MeScreen        onTab={tab} inboxBadge={unreadCount} family={family} onEditPerson={handleEditPerson} /></AnimatedScreen>}
 
       {share && shareTrip && <ShareSheet trip={shareTrip} family={family} onClose={() => setShare(null)} onSent={sent} />}
