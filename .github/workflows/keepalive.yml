@@ -1,0 +1,31 @@
+name: Keepalive
+
+# GitHub disables all scheduled ("cron") workflows after 60 days without a
+# push to the repo. This workflow makes a tiny, harmless commit once a month
+# so the repo never goes quiet long enough to trigger that — keeping
+# gmail_sync.yml (and any other cron workflow) permanently active.
+
+on:
+  schedule:
+    - cron: '0 3 1 * *'   # 03:00 UTC on the 1st of every month
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Touch keepalive timestamp
+        run: echo "Last keepalive run: $(date -u +'%Y-%m-%dT%H:%M:%SZ')" > .github/KEEPALIVE.md
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .github/KEEPALIVE.md
+          git diff --cached --quiet || git commit -m "chore: keepalive ping to prevent scheduled workflows from being disabled"
+          git push
