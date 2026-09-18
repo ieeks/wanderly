@@ -20,7 +20,8 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Touch keepalive timestamp
-        run: echo "Last keepalive run: $(date -u +'%Y-%m-%dT%H:%M:%SZ')" > .github/KEEPALIVE.md
+        run: |
+          echo "Last keepalive run: $(date -u +'%Y-%m-%dT%H:%M:%SZ')" > .github/KEEPALIVE.md
 
       - name: Commit and push
         run: |
